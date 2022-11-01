@@ -14,9 +14,16 @@ Compiler le fichier main.c en changeant les paramètres dedans selon ce que l'on
 
 Cela produira alors plusieurs fichiers (selon les noms mis en paramètres) :
   -> air_temp.tipe : contient chaque température de chaque subdivision de l'air à chaque itération
+  
   -> air_temp_last_first.tipe : contient les mêmes informations mais seulement pour la première et dernière itération
+  
   -> masses_last_first.tipe : de même avec les masses
 
 On peut alors :
   1. **Visulaiser** chaque étape avec `python visualisation_toutes_frame_3d.py` (en changeant les paramètres au préalable)
   2. **Calculer la variation d'enthalpie** avec `python calcul_enthalpie.py` (en changeant les paramètres au préalable)
+
+
+# Exemples
+
+https://user-images.githubusercontent.com/40437798/199306062-3a0c620a-3d06-47d7-8765-4789a2dc9178.mp4
