@@ -25,6 +25,13 @@ float rand_sgn() {
     }
 }
 
+char* file_id_ext(char* name, int id) {
+    char nb[8];
+    sprintf(nb,"%d",id);
+    char* res = (char*)malloc(sizeof(char) * (strlen(name) + 1 + 9 + 6));
+    return strcat(strcat(strcpy(res,name),nb),".tipe");
+}
+
 float calculer_T_wall(int i, int j, int left_right, float lambda, float mu, float tau, surface_temp s_t, f_matrix* air_temp, float K, float m_i, float Vitesse_air) {
     
     
@@ -161,7 +168,7 @@ float* simuler(float T_e, float Vitesse_air, float Volume_air, float L, float l,
     FILE* air_temp_last_first = fopen(air_temp_last_first_file,"w");
 
     fprintf(masses_last_first,"%i*%i*%i\n", n, n, n); // nb_sub / rows / cols
-    fprintf(air_temp_last_first,"%i*%i*%i\n", n, n, n); // nb_sub / rows / cols
+    fprintf(air_temp_last_first,"%i*%i*%i*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f\n", n, n, n, T_e, Vitesse_air, Volume_air, L, l, K, D, offset_floor, offset_l_wall, offset_r_wall); // nb_sub / rows / cols / | pour l'instant seul ce fichier contiendra toutes les informations de la simulation pour éviter la redodnance
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < masses[i].rows; j++) {
