@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 
+
 def str_list_to_float(lst):
     return [float(x) for x in lst]
 
@@ -30,12 +31,14 @@ def read_first_last_matrix(filename, read_meta_data=False):
     else:
         return (res[0], res[1], rows, cols, nb_sub)
 
-def calcul_enthalpie(air_temp_last_first_file="./results/air_temp_last_first.tipe", masses_last_first_file="./results/masses_last_first.tipe"):
+def enthalpy_calc(air_temp_last_first_file="./results/air_temp_last_first.tipe", masses_last_first_file="./results/masses_last_first.tipe"):
     """
     Objectif : calculer la variation d'enthalpie massique engendrée par la variation de température du fluide
     Paramètres :
         - air_temp_last_first_file : fichier qui contient l'ensemble des matrices contenant les températures du fluide à la première et dernière itération
         - masses_last_first_file : de même avec les masses de chaque subdivision de fluide
+    Valeur de retour:
+        - l'enthalpie totale fournie/reçue (selon le signe) au/du gaz
     """
 
     (mat_0, mat_end, rows, cols, nb_sub,  T_e, Vitesse_air, Volume_air, L, l, K, D, offset_floor, offset_l_wall, offset_r_wall) = read_first_last_matrix(air_temp_last_first_file, True)
@@ -51,7 +54,7 @@ def acquire_data(list_files):
     enthalpies = []
     values = []
     for f in list_files:
-        temp = calcul_enthalpie(f[0],f[1])
+        temp = enthalpy_calc(f[0],f[1])
         enthalpies.append(temp[0])
         values.append(temp[1:])
     return enthalpies, values
@@ -70,7 +73,7 @@ def value_to_str(value):
 def main():
     # Pour plus tard https://matplotlib.org/stable/gallery/subplots_axes_and_figures/subplots_demo.html
 
-    enthalpies, values = acquire_data([(f"./results/air_temp_last_first_{i}.tipe",f"./results/masses_last_first_{i}.tipe") for i in range(0,11)])
+    enthalpies, values = acquire_data([(f"./results/air_temp_last_first_{i}.tipe",f"./results/masses_last_first_{i}.tipe") for i in range(0,6)])
 
     fig = plt.figure()
     plt.bar([value_to_str(v) for v in values], enthalpies)
