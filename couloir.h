@@ -19,6 +19,7 @@ typedef struct surface_temp
 {
     surface surf;
     float temp;
+    float h;
 } surface_temp;
 
 typedef struct s_t_matrix
@@ -36,19 +37,19 @@ typedef struct idx_couple
 
 int idx(int i, int j, int size) { return i*size + j; }
 
-float floor_temp_calc(int i, int j, float lambda, float mu, float tau, surface_temp s_t, f_matrix* air_temp, float K, float m_i, float Vitesse_air) {
+float floor_temp_calc(int i, int j, float lambda, float mu, float tau, surface_temp s_t, f_matrix* air_temp, float c_p, float m_i, float fluid_speed) {
     if (j > 0 && (j % air_temp->cols != 0)) {
-        return (Vitesse_air /3.6 * air_temp[i].data[idx(air_temp[i].rows - 1, j - 1, air_temp[i].cols)] / lambda + air_temp[i].data[idx(air_temp[i].rows - 1, j, air_temp[i].cols)] / tau - K / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (Vitesse_air / 3.6 / lambda + 1 / tau - K * (s_t.surf.length * s_t.surf.width) / m_i);
+        return (fluid_speed / 3.6 * air_temp[i].data[idx(air_temp[i].rows - 1, j - 1, air_temp[i].cols)] / lambda + air_temp[i].data[idx(air_temp[i].rows - 1, j, air_temp[i].cols)] / tau - (s_t.h / c_p) / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (fluid_speed / 3.6 / lambda + 1 / tau - (s_t.h / c_p) * (s_t.surf.length * s_t.surf.width) / m_i);
     } else {
-        return (Vitesse_air / 3.6 * air_temp[i].data[idx(air_temp[i].rows - 1, j, air_temp[i].cols)] / lambda + air_temp[i].data[idx(air_temp[i].rows - 1, j, air_temp[i].cols)] / tau - K / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (Vitesse_air / 3.6 / lambda + 1 / tau - K * (s_t.surf.length * s_t.surf.width) / m_i);
+        return (fluid_speed / 3.6 * air_temp[i].data[idx(air_temp[i].rows - 1, j, air_temp[i].cols)] / lambda + air_temp[i].data[idx(air_temp[i].rows - 1, j, air_temp[i].cols)] / tau - (s_t.h / c_p) / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (fluid_speed / 3.6 / lambda + 1 / tau - (s_t.h / c_p) * (s_t.surf.length * s_t.surf.width) / m_i);
     }
 }
 
-float wall_temp_calc(int i, int j, int left_right, float lambda, float mu, float tau, surface_temp s_t, f_matrix* air_temp, float K, float m_i, float fluid_speed) {
+float wall_temp_calc(int i, int j, int left_right, float lambda, float mu, float tau, surface_temp s_t, f_matrix* air_temp, float c_p, float m_i, float fluid_speed) {
     if (j > 0 && (j % air_temp->cols != 0)) {
-        return (fluid_speed / 3.6 * air_temp[left_right].data[idx(i, j - 1, air_temp[left_right].cols)] / lambda + air_temp[left_right].data[idx(i, j, air_temp[left_right].cols)] / tau - K / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (fluid_speed / 3.6 / lambda + 1 / tau - K * (s_t.surf.length * s_t.surf.width) / m_i);
+        return (fluid_speed / 3.6 * air_temp[left_right].data[idx(i, j - 1, air_temp[left_right].cols)] / lambda + air_temp[left_right].data[idx(i, j, air_temp[left_right].cols)] / tau - (s_t.h / c_p) / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (fluid_speed / 3.6 / lambda + 1 / tau - (s_t.h / c_p) * (s_t.surf.length * s_t.surf.width) / m_i);
     } else {
-        return (fluid_speed / 3.6 * air_temp[left_right].data[idx(i, j, air_temp[left_right].cols)] / lambda + air_temp[left_right].data[idx(i, j, air_temp[left_right].cols)] / tau - K / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (fluid_speed / 3.6 / lambda + 1 / tau - K * (s_t.surf.length * s_t.surf.width) / m_i);
+        return (fluid_speed / 3.6 * air_temp[left_right].data[idx(i, j, air_temp[left_right].cols)] / lambda + air_temp[left_right].data[idx(i, j, air_temp[left_right].cols)] / tau - (s_t.h / c_p) / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (fluid_speed / 3.6 / lambda + 1 / tau - (s_t.h / c_p) * (s_t.surf.length * s_t.surf.width) / m_i);
     }
 }
 

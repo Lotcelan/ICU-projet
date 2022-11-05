@@ -26,7 +26,7 @@ float calculer_h(float delta_t, float L) {
 }
 */
 
-float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, float l, int n, float K, float D, float offset_floor, float offset_l_wall, float offset_r_wall, bool continuer_meme_si_fini, int nb_iterations_supplementaires, char* save_air_temp_filename, char* air_temp_last_first_file, char* masses_last_first_file) { // TODO : custom la temp du sol et des murs
+float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, float l, int n, float c_p, float D, float offset_floor, float offset_l_wall, float offset_r_wall, bool continuer_meme_si_fini, int nb_iterations_supplementaires, char* save_air_temp_filename, char* air_temp_last_first_file, char* masses_last_first_file) { // TODO : custom la temp du sol et des murs
     /*
         Effectue la simulation (arguments détaills dans main.c)
     */
@@ -73,13 +73,16 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
             surface new = { .width = mu, .length = lambda};
 
             floor_temp->data[idx(j, k, floor_temp->cols)].temp = T_e + offset_floor;
+            floor_temp->data[idx(j, k, floor_temp->cols)].h = 3000; //1/0.06 + 1/1.75; // 1/h_i + e/lambda (1/hi dépend e = épaisseur surface en (m) et lambda = conductivité thermique (ici celle du béton)); cf https://fr.wikipedia.org/wiki/Coefficient_de_convection_thermique
             floor_temp->data[idx(j, k, floor_temp->cols)].surf = new;
 
-            left_wall_temp->data[idx(j, k, floor_temp->cols)].temp = T_e + offset_l_wall;
-            left_wall_temp->data[idx(j, k, floor_temp->cols)].surf = new;
+            left_wall_temp->data[idx(j, k, left_wall_temp->cols)].temp = T_e + offset_l_wall;
+            left_wall_temp->data[idx(j, k, left_wall_temp->cols)].h = 3000; //1/0.06 + 1/1.75;
+            left_wall_temp->data[idx(j, k, left_wall_temp->cols)].surf = new;
 
-            right_wall_temp->data[idx(j, k, floor_temp->cols)].temp = T_e + offset_r_wall;
-            right_wall_temp->data[idx(j, k, floor_temp->cols)].surf = new;
+            right_wall_temp->data[idx(j, k, right_wall_temp->cols)].temp = T_e + offset_r_wall;
+            right_wall_temp->data[idx(j, k, right_wall_temp->cols)].h = 3000; //1/0.06 + 1/1.75;
+            right_wall_temp->data[idx(j, k, right_wall_temp->cols)].surf = new;
 
         } 
     }
@@ -137,7 +140,7 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
     FILE* air_temp_last_first = fopen(air_temp_last_first_file, "w");
 
     fprintf(masses_last_first,"%i*%i*%i\n", n, n, n); // nb_sub / rows / cols
-    fprintf(air_temp_last_first,"%i*%i*%i*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f\n", n, n, n, T_e, fluid_speed, fluid_volume, L, l, K, D, offset_floor, offset_l_wall, offset_r_wall); // nb_sub / rows / cols / | pour l'instant seul ce fichier contiendra toutes les informations de la simulation pour éviter la redodnance
+    fprintf(air_temp_last_first,"%i*%i*%i*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f\n", n, n, n, T_e, fluid_speed, fluid_volume, L, l, c_p, D, offset_floor, offset_l_wall, offset_r_wall); // nb_sub / rows / cols / | pour l'instant seul ce fichier contiendra toutes les informations de la simulation pour éviter la redodnance
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < masses[i].rows; j++) {
@@ -160,6 +163,8 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
     float max_temp = T_e;
 
     int count = 0;
+
+    // Pour avoir l'itération précédente
 
     f_matrix* last_air_temp = (f_matrix*)malloc(n*sizeof(f_matrix));
     
@@ -188,11 +193,11 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
 
                 // LA CONDUCTION
                 
-                float new_T_floor = floor_temp_calc(i, j, lambda, mu, tau, floor_temp->data[idx(i, n - 1 - idx_c.snd + c, floor_temp->cols)], last_air_temp, K, masses[i].data[idx(air_temp->rows - 1, j, masses[i].cols)], fluid_speed);
+                float new_T_floor = floor_temp_calc(i, j, lambda, mu, tau, floor_temp->data[idx(i, n - 1 - idx_c.snd + c, floor_temp->cols)], last_air_temp, c_p, masses[i].data[idx(air_temp[i].rows - 1, j, masses[i].cols)], fluid_speed);
                 air_temp[i].data[idx(air_temp[i].rows - 1, j, air_temp[i].cols)] = new_T_floor;
-                
-                float new_T_l_wall = wall_temp_calc(i, j, 0, lambda, mu, tau, left_wall_temp->data[idx(i, n - 1 - idx_c.snd + c, left_wall_temp->cols)], last_air_temp, K, masses[0].data[idx(i, j, masses[0].cols)], fluid_speed);
-                float new_T_r_wall = wall_temp_calc(i, j, n - 1, lambda, mu, tau, right_wall_temp->data[idx(i, n - 1 - idx_c.snd + c, right_wall_temp->cols)], last_air_temp, K, masses[n-1].data[idx(i, j, masses[n-1].cols)], fluid_speed);
+
+                float new_T_l_wall = wall_temp_calc(i, j, 0, lambda, mu, tau, left_wall_temp->data[idx(i, n - 1 - idx_c.snd + c, left_wall_temp->cols)], last_air_temp, c_p, masses[0].data[idx(i, j, masses[0].cols)], fluid_speed);
+                float new_T_r_wall = wall_temp_calc(i, j, n - 1, lambda, mu, tau, right_wall_temp->data[idx(i, n - 1 - idx_c.snd + c, right_wall_temp->cols)], last_air_temp, c_p, masses[n-1].data[idx(i, j, masses[n-1].cols)], fluid_speed);
 
                 air_temp[0].data[idx(i, j, air_temp[0].cols)] = new_T_l_wall;
                 air_temp[n-1].data[idx(i, j, air_temp[n-1].cols)] = new_T_r_wall;

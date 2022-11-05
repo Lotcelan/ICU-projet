@@ -25,12 +25,12 @@ int main() {
         - Un tuple de flottants correspondants à la température max et min, surtout utile pour le DEBUG
     */
 
-    float K = 3000/1256.0;
+    float c_p = 1256.0;
     float D = 0.03;
 
     int c = 0;
     for (int i = -50; i <= 50; i+=10){
-        float* res = simulation(288, 5, 7.5, 5, 5, 50, K, D, i, i, i, false, 100, file_id_ext("./results/air_temp_", c), file_id_ext("./results/air_temp_last_first_",c), file_id_ext("./results/masses_last_first_",c));
+        float* res = simulation(288, 5, 7.5, 5, 5, 50, c_p, D, i, i, i, false, 100, file_id_ext("./results/air_temp_", c), file_id_ext("./results/air_temp_last_first_",c), file_id_ext("./results/masses_last_first_",c));
         c++;
     }
     return 0;
