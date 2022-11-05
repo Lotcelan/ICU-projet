@@ -57,7 +57,7 @@ def main():
         - air_temp_file : fichier qui contient l'ensemble des matrices contenant les températures du fluide à la première à chaque itération
         - masses_last_fist_file : de même avec les masses de chaque subdivision de fluide
     """
-    air_temp_file = "./results/air_temp_5.tipe"
+    air_temp_file = "./results/air_temp_0.tipe"
     (matrices, rows, cols, nb, nb_sub, min_temp, max_temp) = read_values(air_temp_file)
     
     FPS = 25
