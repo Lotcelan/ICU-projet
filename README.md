@@ -27,7 +27,18 @@ On peut alors :
 
 # Exemples
 
+## Simulation
+
+### Une simulation quelconque
 https://user-images.githubusercontent.com/40437798/199306062-3a0c620a-3d06-47d7-8765-4789a2dc9178.mp4
+
+## Exploitation
+
+### Variation d'enthalpie
+
+- Différentes configurations avec les mêmes coefficients de convection et de diffusion (et `offset_floor` = `offset_l_wall` = `offset_r_wall`)
+
+![graphe](./assets/K%3D3000_D%3D0.03_all_same_offset.png)
 
 # TODO
 
