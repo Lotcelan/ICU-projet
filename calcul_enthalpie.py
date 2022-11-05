@@ -63,7 +63,7 @@ def acquire_data(list_files):
 def value_to_str(value):
     parametres =  {"nb_sub":0, "T_e":1, "Vit_air":2, "Vol_air":3, "L":4, "l":5, "K":6, "D":7, "offset_floor":8, "offset_l_wall":9, "offset_r_walll":10}
     res = ""
-    wanted = ["T_e", "K", "D", "offset_floor"]
+    wanted = ["offset_floor"]
     for i in range(len(wanted)):
         if i == len(wanted)-1:
             res += f"{wanted[i]} = {value[parametres[wanted[i]]]}"
@@ -74,12 +74,14 @@ def value_to_str(value):
 def main():
     # Pour plus tard https://matplotlib.org/stable/gallery/subplots_axes_and_figures/subplots_demo.html
 
-    enthalpies, values = acquire_data([(f"./results/air_temp_last_first_{i}.tipe",f"./results/masses_last_first_{i}.tipe") for i in range(0,2)])
+    enthalpies, values = acquire_data([(f"./results/air_temp_last_first_{i}.tipe",f"./results/masses_last_first_{i}.tipe") for i in range(0,11)])
     fig = plt.figure()
 
     plt.bar([value_to_str(v) for v in values], enthalpies)
 
     plt.xticks(rotation=-20)
+    plt.xlabel("Différentes configurations")
+    plt.ylabel("Variation d'enthalpie en $(J)$")
 
     plt.show()
 
