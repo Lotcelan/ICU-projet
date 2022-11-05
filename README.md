@@ -1,4 +1,4 @@
-# Projet de TIPE
+# Etude de l'impact ilots de chaleur urbain
 
 # Objectifs
 
@@ -50,3 +50,4 @@ https://user-images.githubusercontent.com/40437798/199306062-3a0c620a-3d06-47d7-
 
 - Possibilité de customiser plus précisément que par un `offset` les températures du sol et des murs
 - Trouver `h`
+- Etudier l'impact de la végétation sur les paramètres de la simulation (étant donné que c'est une solution contre les ICU)
