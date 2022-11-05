@@ -31,12 +31,6 @@ https://user-images.githubusercontent.com/40437798/199306062-3a0c620a-3d06-47d7-
 
 # TODO
 
-## Clean Code
-
-- Passer toutes les variables en français ou anglais, mais pas un mélange
-- Commenter mieux
-- Virer les commentaires de code inutilisés
-
 ## Tests
 
 - Faire un système de test (calcul d'enthalpie pour plusieurs systèmes ...)

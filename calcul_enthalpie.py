@@ -1,5 +1,6 @@
+import matplotlib
 import matplotlib.pyplot as plt
-
+matplotlib.use("GTK4Agg")
 
 def str_list_to_float(lst):
     return [float(x) for x in lst]
@@ -73,9 +74,9 @@ def value_to_str(value):
 def main():
     # Pour plus tard https://matplotlib.org/stable/gallery/subplots_axes_and_figures/subplots_demo.html
 
-    enthalpies, values = acquire_data([(f"./results/air_temp_last_first_{i}.tipe",f"./results/masses_last_first_{i}.tipe") for i in range(0,6)])
-
+    enthalpies, values = acquire_data([(f"./results/air_temp_last_first_{i}.tipe",f"./results/masses_last_first_{i}.tipe") for i in range(0,2)])
     fig = plt.figure()
+
     plt.bar([value_to_str(v) for v in values], enthalpies)
 
     plt.xticks(rotation=-20)

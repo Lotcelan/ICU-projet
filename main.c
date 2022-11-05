@@ -29,7 +29,7 @@ int main() {
     float D = 0.03;
 
     int c = 0;
-    for (int i = 0; i <= 50; i+=10){
+    for (int i = 0; i <= 10; i+=10){
         float* res = simulation(288, 5, 7.5, 5, 5, 50, K, D, i, i, i, false, 100, file_id_ext("./results/air_temp_", c), file_id_ext("./results/air_temp_last_first_",c), file_id_ext("./results/masses_last_first_",c));
         c++;
     }

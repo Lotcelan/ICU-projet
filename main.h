@@ -160,27 +160,26 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
     float max_temp = T_e;
 
     int count = 0;
+
+    f_matrix* last_air_temp = (f_matrix*)malloc(n*sizeof(f_matrix));
+    
+    for (int i = 0; i < n; i++) {
+        last_air_temp[i].cols = air_temp->cols;
+        last_air_temp[i].rows = air_temp->rows;
+        float* temp = (float*)malloc(n * n * sizeof(float));
+        last_air_temp[i].data = temp;
+        for (int j = 0; j < last_air_temp[i].rows; j++) {
+            for (int k = 0; k < last_air_temp[i].cols; k++) {
+                last_air_temp[i].data[idx(j, k, last_air_temp[i].cols)] = air_temp[i].data[idx(j, k, last_air_temp[i].cols)];
+            }
+        }
+    }
+
+
     while (idx_c.snd != 0 || (continuer_meme_si_fini && count < nb_iterations_supplementaires)) {
 
         if (continuer_meme_si_fini && idx_c.snd <= 0) {
             count++;
-        }
-
-        // COPIE POUR AVOIR ITERATION PRECEDENTE
-
-        f_matrix* last_air_temp = (f_matrix*)malloc(n*sizeof(f_matrix));
-        
-        for (int i = 0; i < n; i++) {
-            last_air_temp[i].cols = air_temp->cols;
-            last_air_temp[i].rows = air_temp->rows;
-            float* temp = (float*)malloc(n * n * sizeof(float));
-            last_air_temp[i].data = temp;
-            //memcpy(&last_air_temp[i].data, &air_temp[i].data, n*n*sizeof(float));
-            for (int j = 0; j < last_air_temp[i].rows; j++) {
-                for (int k = 0; k < last_air_temp[i].cols; k++) {
-                    last_air_temp[i].data[idx(j, k, last_air_temp[i].cols)] = air_temp[i].data[idx(j, k, last_air_temp[i].cols)];
-                }
-            }
         }
         
         for (int i = 0; i < n; i++ ) {
@@ -222,9 +221,6 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
                 }
 
             }
-
-            free(last_air_temp[i].data);
-
         }
 
         // Inscription des données de température de ce tour de simulation dans le fichier
@@ -249,7 +245,19 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
             if (idx_c.snd <= 0) { idx_c.snd= 0; }
         }
         
-        free(last_air_temp);
+        // COPIE POUR AVOIR ITERATION PRECEDENTE
+        
+        for (int i = 0; i < n; i++) {
+
+            last_air_temp[i].cols = air_temp[i].cols;
+            last_air_temp[i].rows = air_temp[i].rows;
+            
+            for (int j = 0; j < last_air_temp[i].rows; j++) {
+                for (int k = 0; k < last_air_temp[i].cols; k++) {
+                    last_air_temp[i].data[idx(j, k, last_air_temp[i].cols)] = air_temp[i].data[idx(j, k, last_air_temp[i].cols)];
+                }
+            }
+        }
     }
 
     // A la toute fin du fichier contenant toute la simulation on ajoute la température min et max
