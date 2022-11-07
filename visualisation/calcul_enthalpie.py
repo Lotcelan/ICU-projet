@@ -32,7 +32,7 @@ def read_first_last_matrix(filename, read_meta_data=False):
     else:
         return (res[0], res[1], rows, cols, nb_sub)
 
-def enthalpy_calc(air_temp_last_first_file="./results/air_temp_last_first.tipe", masses_last_first_file="./results/masses_last_first.tipe"):
+def enthalpy_calc(air_temp_last_first_file="../results/air_temp_last_first.tipe", masses_last_first_file="../results/masses_last_first.tipe"):
     """
     Objectif : calculer la variation d'enthalpie massique engendrée par la variation de température du fluide
     Paramètres :
@@ -74,7 +74,7 @@ def value_to_str(value):
 def main():
     # Pour plus tard https://matplotlib.org/stable/gallery/subplots_axes_and_figures/subplots_demo.html
 
-    enthalpies, values = acquire_data([(f"./results/air_temp_last_first_{i}.tipe",f"./results/masses_last_first_{i}.tipe") for i in range(0,1)])
+    enthalpies, values = acquire_data([(f"../results/air_temp_last_first_{i}.tipe",f"../results/masses_last_first_{i}.tipe") for i in range(0,1)])
     fig, ax = plt.subplots()
     
     bars = ax.bar([value_to_str(v) for v in values], enthalpies)

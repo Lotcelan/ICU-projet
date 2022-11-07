@@ -26,7 +26,7 @@ float calculer_h(float delta_t, float L) {
 }
 */
 
-float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, float l, int n, float c_p, float D, float offset_floor, float offset_l_wall, float offset_r_wall, bool continuer_meme_si_fini, int nb_iterations_supplementaires, char* save_air_temp_filename, char* air_temp_last_first_file, char* masses_last_first_file) { // TODO : custom la temp du sol et des murs
+float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, float l, int n, float c_p, float D, float offset_floor, float offset_l_wall, float offset_r_wall, bool continuer_meme_si_fini, int nb_iterations_supplementaires, char* save_air_temp_filename, char* air_temp_last_first_file, char* masses_last_first_file, bool flask) { // TODO : custom la temp du sol et des murs
     /*
         Effectue la simulation (arguments détaills dans main.c)
     */
@@ -290,6 +290,12 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
     float* res = malloc(sizeof(float)*2);
     res[0] = min_temp - 273.0;
     res[1] = max_temp - 273.0;
+
+    if (flask) {
+        char* res = (char*)malloc(sizeof(char)*2096);
+        sprintf(res, "curl -X POST -d 'T_e=%.6f&Vit_air=%.6f&Vol_air=%.6f&L=%.6f&l=%.6f&n=%i&c_p=%.6f&D=%.6f&offset_floor=%.6f&offset_l_wall=%.6f&offset_r_wall=%.6f&continuer_meme_si_fini=%i&nb_it_supp=%i&min_temp=%.6f&max_temp=%.6f' http://127.0.0.1:5000/", T_e, fluid_speed, fluid_volume, L, l, n, c_p, D, offset_floor, offset_l_wall, offset_r_wall, (int)continuer_meme_si_fini, nb_iterations_supplementaires, min_temp -273.0 , max_temp - 273.0);
+        system(res);
+    }
 
     return res;
 
