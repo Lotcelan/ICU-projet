@@ -8,7 +8,6 @@ try:
     def result():
         res = ""
         for param in request.form.to_dict():
-            #print(f"{param} -> {request.form.to_dict()[param]}")
             res += f"{param}={request.form.to_dict()[param]};"
         print("Received !")
         f.write(res + "\n")

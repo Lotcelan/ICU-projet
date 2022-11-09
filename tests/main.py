@@ -1,4 +1,4 @@
-import os
+import os, threading
 
 def create_test(T_e, Vitesse_air, Volume_air, L, l, n, c_p, D, offset_floor, offset_l_wall, offset_r_wall, continuer_meme_si_fini, nb_it_supp, save_air_temp_filename, air_temp_last_first_file, masses_last_first_file):
     res = {}
@@ -28,22 +28,45 @@ def run_test(t):
 
 
 def main():
+    """
+        Fichier qui permet de faire des batteries de tests. Utilisation :
+            - Veiller à ce que le fichier 'tests.txt' soit bien présent dans results
+            - Régler ci-dessous les paramètres que l'on veut tester en créant des listes avec les valeur possibles, puis en loopant dessus pour créer une liste 'tests' de tests
+            - Régler le nb de thread voulue (permet d'aller plus vite au prix d'une plus grande utilisation du CPU)
+            - Puis cf README pour la méthode pour lancer les tests
+    """
+
+
     tests = []
 
-    vitesses = [1,5,10,20,30,50]
-    volumes = [0.5,1,3,5,7.5,15,20]
-    L_l = [0.5,1,3,5,7.5,15,20]
-    D = [0.01,0.03,0.176,0.5,1]
+    nb_threads = 8
+
+    vitesses = [1,50]
+    volumes = [0.5,15,20]
+    L_l = [0.5,1,3.5,15,20]
+    #D = [0.01,0.03,0.176,0.5,1,3]
+    D = [0.3]
 
     for vit in vitesses:
         for vol in volumes:
             for l in L_l:
                 for d in D:
-                    tests.append(create_test(288,vit,vol,l,l,50,1256,d,10,10,10,False,10,"air_temp.tipe","air_temp_last_first.tipe","masses_temp_last_first.tipe")
-)
+                    tests.append(create_test(288,vit,vol,l,l,50,1256,d,10,10,10,False,10,"../results/air_temp.tipe","../results/air_temp_last_first.tipe","../results/masses_temp_last_first.tipe"))
 
-    for t in tests:
-        run_test(t)
+    curr = 0
+    nb_tests = len(tests)
+
+    while nb_tests-curr > 0:
+        threads = []
+        
+        while threading.active_count() <= nb_threads + 1 and curr < nb_tests:
+            new = threading.Thread(target=run_test, args=(tests[curr],))
+            new.start()
+            threads.append(new)
+            curr += 1
+
+        for th in threads:
+            th.join()
 
 if __name__ == "__main__":
     main()
