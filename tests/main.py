@@ -23,14 +23,24 @@ def create_test(T_e, Vitesse_air, Volume_air, L, l, n, c_p, D, offset_floor, off
 
 def run_test(t):
     
-    os.system("./run.sh &")
-    os.system(f"../simulation/main {t['T_e']} {t['Vitesse_air']} {t['Volume_air']} {t['L']} {t['l']} {t['n']} {t['c_p']} {t['D']} {t['offset_floor']} {t['offset_l_wall']} {t['offset_r_wall']} {t['continuer_meme_si_fini']} {t['nb_it_supp']} {t['save_air_temp_filename']} {t['air_temp_last_first_file']} {t['masses_last_first_file']} 1") # le dernier 1 est pour le mode flask
+    #os.system("./run.sh &")
+    os.system(f"../simulation/main {t['T_e']} {t['Vitesse_air']} {t['Volume_air']} {t['L']} {t['l']} {t['n']} {t['c_p']} {t['D']} {t['offset_floor']} {t['offset_l_wall']} {t['offset_r_wall']} {t['continuer_meme_si_fini']} {t['nb_it_supp']} {t['save_air_temp_filename']} {t['air_temp_last_first_file']} {t['masses_last_first_file']} 1 0") # le dernier 1 est pour le mode flask
 
 
 def main():
-    tests = [
-        create_test(288,5,7.5,5,5,50,1256,0.03,10,10,10,False,10,"air_temp.tipe","air_temp_last_first.tipe","masses_temp_last_first.tipe")
-    ]
+    tests = []
+
+    vitesses = [1,5,10,20,30,50]
+    volumes = [0.5,1,3,5,7.5,15,20]
+    L_l = [0.5,1,3,5,7.5,15,20]
+    D = [0.01,0.03,0.176,0.5,1]
+
+    for vit in vitesses:
+        for vol in volumes:
+            for l in L_l:
+                for d in D:
+                    tests.append(create_test(288,vit,vol,l,l,50,1256,d,10,10,10,False,10,"air_temp.tipe","air_temp_last_first.tipe","masses_temp_last_first.tipe")
+)
 
     for t in tests:
         run_test(t)

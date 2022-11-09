@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
    // ./main 288 5 7.5 5 5 50 1256 30.03 10 10 10 0 10 "air_temp.tipe" "air_temp_last_first.tipe" "masses_temp_last_first.tipe" 0
 
     float T_e, Vitesse_air, Volume_air, L, l, c_p, D, offset_floor, offset_l_wall, offset_r_wall;
-    int n, continuer_meme_si_fini, nb_it_supp, flask;
+    int n, continuer_meme_si_fini, nb_it_supp, flask, print_to_file;
     char* save_air_temp_filename_buff = (char*)malloc(sizeof(char)*64);
     char* save_air_temp_filename;
     char* air_temp_last_first_file_buff = (char*)malloc(sizeof(char)*64);
@@ -53,9 +53,10 @@ int main(int argc, char **argv) {
     air_temp_last_first_file = strcpy(air_temp_last_first_file_buff, argv[15]);
     masses_temp_last_first_file = strcpy(masses_temp_last_first_file_buff, argv[16]);
     flask = atoi(argv[17]);
+    print_to_file = atoi(argv[18]);
     
 
-    simulation(T_e, Vitesse_air, Volume_air, L, l, n, c_p, D, offset_floor, offset_l_wall, offset_r_wall, (bool)continuer_meme_si_fini, nb_it_supp, save_air_temp_filename, air_temp_last_first_file, masses_temp_last_first_file, (bool)flask);
+    simulation(T_e, Vitesse_air, Volume_air, L, l, n, c_p, D, offset_floor, offset_l_wall, offset_r_wall, (bool)continuer_meme_si_fini, nb_it_supp, save_air_temp_filename, air_temp_last_first_file, masses_temp_last_first_file, (bool)flask, (bool)print_to_file);
 
     /*
     float c_p = 1256.0;
