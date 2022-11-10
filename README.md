@@ -27,11 +27,21 @@ On peut alors :
 
 ## Tests
 
+### Faire des tests
+
+/!\ Faire attention que le fichier `tests.txt` soit présent dans `/results/`
+
 Pour lancer un batch de test (différents paramètres etc...) :
 
   1. Aller dans /tests
   2. Lancer `./run.sh` (ou juste lancer l'instance flask : `flask run`)
   3. Lancer **depuis /tests** `main.py` en ayant au préalable configuré les tests
+
+### Exploiter des tests
+
+Une fois les tests effectués, on peut les exploiter :
+
+  1. **Depuis /tests** lancer `parse_tests.py` en ayant au préalable configuré ce que l'on voulait observer
 
 # Exemples
 
@@ -47,6 +57,18 @@ https://user-images.githubusercontent.com/40437798/199306062-3a0c620a-3d06-47d7-
 - Différentes configurations avec les mêmes coefficients de convection et de diffusion (et `offset_floor` = `offset_l_wall` = `offset_r_wall`)
 
 ![graphe](./assets/K%3D3000_D%3D0.03_all_same_offset.png)
+
+# Installation
+
+## Bibliothèques requises
+
+### Python
+
+Pour utiliser la plupart des scripts, il faut `matplotlib`, et `pygame` pour faire la visualisation 3D. Pour `parse_tests.py` il faut `pandas`.
+
+### C
+
+Une installation classique de C suffit.
 
 # TODO
 

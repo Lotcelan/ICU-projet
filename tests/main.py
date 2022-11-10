@@ -41,11 +41,11 @@ def main():
 
     nb_threads = 8
 
-    vitesses = [1,50]
-    volumes = [0.5,15,20]
-    L_l = [0.5,1,3.5,15,20]
+    vitesses = [1,10,50]
+    volumes = [0.5,5,10,20]
+    L_l = [0.5,3,5,15,20]
     #D = [0.01,0.03,0.176,0.5,1,3]
-    D = [0.3]
+    D = [0.3,0.5]
 
     for vit in vitesses:
         for vol in volumes:
