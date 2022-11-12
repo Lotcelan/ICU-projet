@@ -2,7 +2,6 @@
 
 int main(int argc, char **argv) {
     /*
-    
     Objectif : Simuler la température  d'une masse d'air entre des murs et un sol dont on peut paramétrer les températures
     Paramètres :
         - T_e (K) : Température initiale de la masse d'air
@@ -13,7 +12,7 @@ int main(int argc, char **argv) {
         - n : nombre de subdivisions en petit pavés de la masse d'air
         - c_p : la capacité calorifique de l'air (ou autre fluide considéré) en J.m^(-3).K^(-1)
         - D (m^2.s^(-1)): coefficient de diffusion de l'air (ou du fluide considéré)
-        - offset_floor (K) : la tempérture du sol sera de T_e + offset_floor 
+        - config_floor (K) : la tempérture du sol sera de T_e + offset_floor 
         - offset_l_wall (K) : la tempérture du mur gauche sera de T_e + offset_l_wall
         - offset_r_wall (K) : la tempérture du mur droit sera de T_e + offset_r_wall
         - continuer_meme_si_fini : comme la simulation s'arrête à l'instant ou l'entièreté du fluide est sorti de la zone, il peut être intéressant de regarder plus longtemps l'évolution de la température, ce booléen s'occupe de ça
@@ -21,6 +20,7 @@ int main(int argc, char **argv) {
         - save_air_temp_filename : nom du fichier contenant l'entièreté de la simulation
         - air_temp_last_first_file : nom du fichier contenant les données du premier et dernier tour de simulation pour les températures de l'air
         - masses_last_first_file : nom du fichier contenant les données du premier et dernier tour de simulation pour les masses
+        - print_to_file : indique si la simulation doit être log dans les fichiers donnés précédemment
     Valeur de retour:
         - Un tuple de flottants correspondants à la température max et min, surtout utile pour le DEBUG
     */

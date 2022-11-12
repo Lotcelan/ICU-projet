@@ -6,6 +6,8 @@ Etudier l'impact qu'ont les ICU sur la température d'une masse d'air.
 
 # Utilisation
 
+**CF le TL;DR** pour un résumé des étapes pour faire un batch de tests
+
 ## Simulation
 
 Compiler le fichier main.c en changeant les paramètres dedans selon ce que l'on veut : `gcc main.c -o main -lm`
@@ -13,13 +15,11 @@ Pour lancer une simulation : `./main [args]` avec `[args]` la liste **complète*
 
 ## Exploitation
 
-Cela produira alors plusieurs fichiers (selon les noms mis en paramètres, et si le `print_to_file` est actif) :
-  
-  -> air_temp.tipe : contient chaque température de chaque subdivision de l'air à chaque itération
-  
-  -> air_temp_last_first.tipe : contient les mêmes informations mais seulement pour la première et dernière itération
-  
-  -> masses_last_first.tipe : de même avec les masses
+Cela peut alors produire plusieurs fichiers (selon les noms mis en paramètres, et si le `print_to_file` est actif) :
+*(Les noms sont des exemples, mais ils correspondent aux noms des paramètres)*
+  1. air_temp.tipe : contient chaque température de chaque subdivision de l'air à chaque itération
+  2. air_temp_last_first.tipe : contient les mêmes informations mais seulement pour la première et dernière itération
+  3. masses_last_first.tipe : de même avec les masses
 
 On peut alors :
   1. **Visulaiser** chaque étape avec `python visualisation_toutes_frame_3d.py` (en changeant les paramètres au préalable)
@@ -35,13 +35,27 @@ Pour lancer un batch de test (différents paramètres etc...) :
 
   1. Aller dans /tests
   2. Lancer `./run.sh` (ou juste lancer l'instance flask : `flask run`)
-  3. Lancer **depuis /tests** `main.py` en ayant au préalable configuré les tests
+  3. Lancer **depuis /tests** `main.py` en ayant au préalable configuré les tests (cf paragraphe plus bas)
+
+### Configuration des tests
+
+Il y a plusieurs moyens de faire des tests, il y a en effet beaucoup de paramètres, donc pour configurer les tests on peut jouer sur tous les paramètres de la simulation, on peut donc créer différentes listes contenant les différentes valeurs que vont prendre chaque paramètre, puis faire un `for` sur ces différentes listes en faisant un appel à `create_test`.
+Ensuite, pour ce qui est de la configurabilité des températures des murs et des sols + les différentes valeurs de h, voici la méthode :
+Dans le fichier `/config/user_config.txt` placer sur chaque ligne les différentes configurations avec le format décrit dans `/tests/main.py`, les tests prendront en compte chaque configuration.
 
 ### Exploiter des tests
 
 Une fois les tests effectués, on peut les exploiter :
 
   1. **Depuis /tests** lancer `parse_tests.py` en ayant au préalable configuré ce que l'on voulait observer
+
+## TL;DR
+
+  1. Mettre dans `user_config.txt` les différentes configurations pour les températures du sol et des différents murs
+  2. Se placer dans `/tests/` configurer les tests comme décrit au dessus
+  3. Lancer `./run.sh`
+  4. Lancer `main.y`
+  5. Exploiter
 
 # Exemples
 
