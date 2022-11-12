@@ -12,7 +12,7 @@ def custom(config, rows, cols, filename):
     f = open(filename, "w+")
     for i in range(rows):
         for j in range(cols - 1):
-            f.write(str(val_by_loc(default_value, list, i, j)) + ";")
+            f.write(str(val_by_loc(default_value, list, i, j)) + " ")
         f.write(str(val_by_loc(default_value, list, i, cols - 1)) + "\n")
     f.close()
 
@@ -20,7 +20,7 @@ def all_the_same(value, rows, cols, filename):
     f = open(filename, "w+")
     for i in range(rows):
         for j in range(cols-1):
-            f.write(str(value) + ";")
+            f.write(str(value) + " ")
         f.write(value + "\n")
     f.close()
 
@@ -69,4 +69,5 @@ def main(args):
 
 if __name__ == "__main__":
     args = sys.argv
+    print(f"{sys.argv=}")
     main(args)

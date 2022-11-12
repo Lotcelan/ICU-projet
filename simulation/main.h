@@ -21,7 +21,7 @@ float calculer_h(float delta_t, float L) {
 */
 
 float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, float l,
-    int n, float c_p, float D, float offset_floor, float offset_l_wall, float offset_r_wall,
+    int n, float c_p, float D, char* config_l_wall_temp, char*  config_floor_temp, char*  config_r_wall_temp, char*  config_l_wall_h, char*  config_floor_h, char*  config_r_wall_h,
     bool continuer_meme_si_fini, int nb_iterations_supplementaires, char* save_air_temp_filename,
     char* air_temp_last_first_file, char* masses_last_first_file, bool flask, bool print_to_file)
 {
@@ -66,24 +66,47 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
     left_wall_temp->data = l_wall;
     right_wall_temp->data = r_wall;
 
+    FILE* l_wall_temp_file = fopen(config_l_wall_temp, "r");
+    FILE* floor_temp_file = fopen(config_floor_temp, "r");
+    FILE* r_wall_temp_file = fopen(config_r_wall_temp, "r");
+
+    FILE* l_wall_h_file = fopen(config_l_wall_h, "r");
+    FILE* floor_h_file = fopen(config_floor_h, "r");
+    FILE* r_wall_h_file = fopen(config_r_wall_h, "r");
+
+    float temp;
+    float h;
     for (int j = 0; j < floor_temp->rows; j++) {        // On suppose que murs et sol ont la même dimension
         for (int k = 0; k < floor_temp->cols; k++) {
             surface new = { .width = mu, .length = lambda};
 
-            floor_temp->data[idx(j, k, floor_temp->cols)].temp = T_e + offset_floor;
-            floor_temp->data[idx(j, k, floor_temp->cols)].h = 1/0.06 + 1/1.75; // 1/h_i + e/lambda (1/hi dépend e = épaisseur surface en (m) et lambda = conductivité thermique (ici celle du béton)); cf https://fr.wikipedia.org/wiki/Coefficient_de_convection_thermique
+            fscanf(floor_temp_file, "%f", &temp);
+            floor_temp->data[idx(j, k, floor_temp->cols)].temp = temp;
+            fscanf(floor_h_file, "%f", &h);
+            floor_temp->data[idx(j, k, floor_temp->cols)].h = h; // 1/h_i + e/lambda (1/hi dépend e = épaisseur surface en (m) et lambda = conductivité thermique (ici celle du béton)); cf https://fr.wikipedia.org/wiki/Coefficient_de_convection_thermique
             floor_temp->data[idx(j, k, floor_temp->cols)].surf = new;
 
-            left_wall_temp->data[idx(j, k, left_wall_temp->cols)].temp = T_e + offset_l_wall;
-            left_wall_temp->data[idx(j, k, left_wall_temp->cols)].h = 1/0.06 + 1/1.75;
+            fscanf(l_wall_temp_file, "%.6f", &temp);
+            left_wall_temp->data[idx(j, k, left_wall_temp->cols)].temp = temp;
+            fscanf(l_wall_h_file, "%.6f", &h);
+            left_wall_temp->data[idx(j, k, left_wall_temp->cols)].h = h;
             left_wall_temp->data[idx(j, k, left_wall_temp->cols)].surf = new;
 
-            right_wall_temp->data[idx(j, k, right_wall_temp->cols)].temp = T_e + offset_r_wall;
-            right_wall_temp->data[idx(j, k, right_wall_temp->cols)].h = 1/0.06 + 1/1.75;
+            fscanf(r_wall_temp_file, "%.6f", &temp);
+            right_wall_temp->data[idx(j, k, right_wall_temp->cols)].temp = temp;
+            fscanf(r_wall_h_file, "%.6f", &h);
+            right_wall_temp->data[idx(j, k, right_wall_temp->cols)].h = h;
             right_wall_temp->data[idx(j, k, right_wall_temp->cols)].surf = new;
 
         } 
     }
+
+    fclose(l_wall_temp_file);
+    fclose(floor_temp_file);
+    fclose(r_wall_temp_file);
+    fclose(l_wall_h_file);
+    fclose(floor_h_file);
+    fclose(r_wall_h_file);
 
     // TEMPERATURES DE L'AIR
 
@@ -140,7 +163,7 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
         }
 
         fprintf(masses_last_first,"%i*%i*%i\n", n, n, n); // nb_sub / rows / cols
-        fprintf(air_temp_last_first,"%i*%i*%i*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f\n", n, n, n, T_e, fluid_speed, fluid_volume, L, l, c_p, D, offset_floor, offset_l_wall, offset_r_wall); // nb_sub / rows / cols / | pour l'instant seul ce fichier contiendra toutes les informations de la simulation pour éviter la redodnance
+        fprintf(air_temp_last_first,"%i*%i*%i*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f\n", n, n, n, T_e, fluid_speed, fluid_volume, L, l, c_p, D); // nb_sub / rows / cols / | pour l'instant seul ce fichier contiendra toutes les informations de la simulation pour éviter la redodnance
 
     // Inscription du premier tour de simulation dans les fichiers
         for (int i = 0; i < n; i++) {
@@ -298,7 +321,7 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
 
     if (flask) {
         char* res = (char*)malloc(sizeof(char)*2096);
-        sprintf(res, "curl -X POST -d 'T_e=%.6f&Vit_air=%.6f&Vol_air=%.6f&L=%.6f&l=%.6f&n=%i&c_p=%.6f&D=%.6f&offset_floor=%.6f&offset_l_wall=%.6f&offset_r_wall=%.6f&continuer_meme_si_fini=%i&nb_it_supp=%i&min_temp=%.6f&max_temp=%.6f' http://127.0.0.1:5000/", T_e, fluid_speed, fluid_volume, L, l, n, c_p, D, offset_floor, offset_l_wall, offset_r_wall, (int)continuer_meme_si_fini, nb_iterations_supplementaires, min_temp -273.0 , max_temp - 273.0);
+        sprintf(res, "curl -X POST -d 'T_e=%.6f&Vit_air=%.6f&Vol_air=%.6f&L=%.6f&l=%.6f&n=%i&c_p=%.6f&D=%.6f&continuer_meme_si_fini=%i&nb_it_supp=%i&min_temp=%.6f&max_temp=%.6f' http://127.0.0.1:5000/", T_e, fluid_speed, fluid_volume, L, l, n, c_p, D, (int)continuer_meme_si_fini, nb_iterations_supplementaires, min_temp -273.0 , max_temp - 273.0);
         system(res);
     }
 
