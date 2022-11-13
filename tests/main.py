@@ -1,6 +1,6 @@
 import os, threading, subprocess
 
-def create_test(T_e, Vitesse_air, Volume_air, L, l, n, c_p, D, config_l_wall_temp, config_floor_temp, config_r_wall_temp, config_l_wall_h, config_floor_h, config_r_wall_h, continuer_meme_si_fini, nb_it_supp, save_air_temp_filename, air_temp_last_first_file, masses_last_first_file):
+def create_test(T_e, Vitesse_air, Volume_air, L, l, n, c_p, D, config_l_wall_temp, config_floor_temp, config_r_wall_temp, config_l_wall_h, config_floor_h, config_r_wall_h, continuer_meme_si_fini, nb_it_supp, save_air_temp_filename, air_temp_last_first_file, masses_last_first_file, id):
     res = {}
     res["T_e"] = T_e
     res["Vitesse_air"] = Vitesse_air
@@ -21,16 +21,17 @@ def create_test(T_e, Vitesse_air, Volume_air, L, l, n, c_p, D, config_l_wall_tem
     res["save_air_temp_filename"] = save_air_temp_filename
     res["air_temp_last_first_file"] = air_temp_last_first_file
     res["masses_last_first_file"] = masses_last_first_file
+    res["id"] = id
 
     return res
 
 def run_test(t):
-    os.system(f"../simulation/main {t['T_e']} {t['Vitesse_air']} {t['Volume_air']} {t['L']} {t['l']} {t['n']} {t['c_p']} {t['D']} {t['config_l_wall_temp']} {t['config_floor_temp']} {t['config_r_wall_temp']} {t['config_l_wall_h']} {t['config_floor_h']} {t['config_r_wall_h']} {t['continuer_meme_si_fini']} {t['nb_it_supp']} {t['save_air_temp_filename']} {t['air_temp_last_first_file']} {t['masses_last_first_file']} 1 0") # le dernier 1 est pour le mode flask et le 0 pour print_to_file
+    cmd = f"../simulation/main {t['T_e']} {t['Vitesse_air']} {t['Volume_air']} {t['L']} {t['l']} {t['n']} {t['c_p']} {t['D']} {t['config_l_wall_temp']} {t['config_floor_temp']} {t['config_r_wall_temp']} {t['config_l_wall_h']} {t['config_floor_h']} {t['config_r_wall_h']} {t['continuer_meme_si_fini']} {t['nb_it_supp']} {t['save_air_temp_filename']} {t['air_temp_last_first_file']} {t['masses_last_first_file']} 1 0 {t['id']}" # le dernier 1 est pour le mode flask et le 0 pour print_to_file
+    print(cmd)
+    os.system(cmd) 
 
 def create_custom_config(confs, names, id):
     for (c, n) in list(zip(confs,names)):
-        print(f"{c[1]=}")
-        #os.system('python gen_config.py {0} {1}'.format(c[0], c[1]))
         subprocess.call(["python", "gen_config.py", c[0], (c[1] + n.format(id))])
 
 def read_user_conf():
@@ -43,10 +44,8 @@ def read_user_conf():
     count = 0
     while count < len(data):
         temp = []
-        i = 0
         for line in data[count:count+6]:
             temp.append([line.split("|")[0], line.split("|")[1]])
-            i+=1
             count += 1
         res.append(temp)
 
@@ -77,10 +76,10 @@ def main():
 
     nb_subdivision = 50
 
-    vitesses = [5]
-    volumes = [7.5]
-    L_l = [5]
-    D = [0.03]
+    vitesses = [5,15]
+    volumes = [2,7.5]
+    L_l = [0.5,5]
+    D = [0.03,0.05,0.1]
 
     configs = read_user_conf()
 
@@ -91,7 +90,7 @@ def main():
             for vol in volumes:
                 for l in L_l:
                     for d in D:
-                        tests.append(create_test(288,vit,vol,l,l,nb_subdivision,1256,d,names[0].format(id),names[1].format(id), names[2].format(id), names[3].format(id), names[4].format(id), names[5].format(id), False,10,"../results/air_temp.tipe","../results/air_temp_last_first.tipe","../results/masses_temp_last_first.tipe"))
+                        tests.append(create_test(288,vit,vol,l,l,nb_subdivision,1256,d,names[0].format(id),names[1].format(id), names[2].format(id), names[3].format(id), names[4].format(id), names[5].format(id), False,10,"../results/air_temp.tipe","../results/air_temp_last_first.tipe","../results/masses_temp_last_first.tipe", id))
         id += 1
     curr = 0
     nb_tests = len(tests)

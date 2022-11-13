@@ -13,7 +13,7 @@ def read_first_last_matrix(filename, read_meta_data=False):
     data = data[0:len(data)-1]
     first_line = data[0].split("*")
     if read_meta_data:
-        (nb_sub, rows, cols, T_e, Vitesse_air, Volume_air, L, l, c_p, D) = (int(first_line[0]), int(first_line[1]), int(first_line[2]), float(first_line[3]), float(first_line[4]), float(first_line[5]), float(first_line[6]), float(first_line[7]), float(first_line[8]), float(first_line[9]))
+        (nb_sub, rows, cols, T_e, Vitesse_air, Volume_air, L, l, c_p, D, id) = (int(first_line[0]), int(first_line[1]), int(first_line[2]), float(first_line[3]), float(first_line[4]), float(first_line[5]), float(first_line[6]), float(first_line[7]), float(first_line[8]), float(first_line[9]), int(first_line[10]))
     else:
         (nb_sub, rows, cols) = (int(first_line[0]), int(first_line[1]), int(first_line[2]))
     data = data[1:len(data)]
@@ -28,7 +28,7 @@ def read_first_last_matrix(filename, read_meta_data=False):
             temp.append(temp2)
         res.append(temp)
     if read_meta_data:
-        return (res[0], res[1], rows, cols, nb_sub, T_e, Vitesse_air, Volume_air, L, l, c_p, D)
+        return (res[0], res[1], rows, cols, nb_sub, T_e, Vitesse_air, Volume_air, L, l, c_p, D, id)
     else:
         return (res[0], res[1], rows, cols, nb_sub)
 
@@ -42,7 +42,7 @@ def enthalpy_calc(air_temp_last_first_file="../results/air_temp_last_first.tipe"
         - l'enthalpie totale fournie/reçue (selon le signe) au/du gaz
     """
 
-    (mat_0, mat_end, rows, cols, nb_sub,  T_e, Vitesse_air, Volume_air, L, l, c_p, D) = read_first_last_matrix(air_temp_last_first_file, True)
+    (mat_0, mat_end, rows, cols, nb_sub,  T_e, Vitesse_air, Volume_air, L, l, c_p, D, id) = read_first_last_matrix(air_temp_last_first_file, True)
     (masses_0, masses_end, _, _, _) = read_first_last_matrix(masses_last_first_file)
     h_tot = 0
     for i in range(nb_sub):
@@ -61,7 +61,7 @@ def acquire_data(list_files):
     return enthalpies, values
 
 def value_to_str(value):
-    parametres =  {"nb_sub":0, "T_e":1, "Vit_air":2, "Vol_air":3, "L":4, "l":5, "c_p":6, "D":7}
+    parametres =  {"nb_sub":0, "T_e":1, "Vit_air":2, "Vol_air":3, "L":4, "l":5, "c_p":6, "D":7, "id":8}
     res = ""
     wanted = ["T_e"]
     for i in range(len(wanted)):

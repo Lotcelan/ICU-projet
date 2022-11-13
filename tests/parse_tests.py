@@ -26,8 +26,8 @@ def main():
 
     parsed_content = parse_file("../results/tests.txt")
 
-    min_temps = [float(line[-2][1]) if float(line[-2][1]) != float("-inf") else 0 for line in parsed_content]
-    max_temps = [float(line[-1][1]) if float(line[-1][1]) != float("inf") else 0for line in parsed_content]
+    min_temps = [float(line[-3][1]) if float(line[-3][1]) != float("-inf") else 0 for line in parsed_content]
+    max_temps = [float(line[-2][1]) if float(line[-2][1]) != float("inf") else 0 for line in parsed_content]
 
 
     indexes = [i for i in range(len(parsed_content))]

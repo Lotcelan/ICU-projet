@@ -23,7 +23,7 @@ float calculer_h(float delta_t, float L) {
 float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, float l,
     int n, float c_p, float D, char* config_l_wall_temp, char*  config_floor_temp, char*  config_r_wall_temp, char*  config_l_wall_h, char*  config_floor_h, char*  config_r_wall_h,
     bool continuer_meme_si_fini, int nb_iterations_supplementaires, char* save_air_temp_filename,
-    char* air_temp_last_first_file, char* masses_last_first_file, bool flask, bool print_to_file)
+    char* air_temp_last_first_file, char* masses_last_first_file, bool flask, bool print_to_file, int id)
 {
     /*
         Effectue la simulation (arguments détaills dans main.c)
@@ -86,15 +86,15 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
             floor_temp->data[idx(j, k, floor_temp->cols)].h = h; // 1/h_i + e/lambda (1/hi dépend e = épaisseur surface en (m) et lambda = conductivité thermique (ici celle du béton)); cf https://fr.wikipedia.org/wiki/Coefficient_de_convection_thermique
             floor_temp->data[idx(j, k, floor_temp->cols)].surf = new;
 
-            fscanf(l_wall_temp_file, "%.6f", &temp);
+            fscanf(l_wall_temp_file, "%f", &temp);
             left_wall_temp->data[idx(j, k, left_wall_temp->cols)].temp = temp;
-            fscanf(l_wall_h_file, "%.6f", &h);
+            fscanf(l_wall_h_file, "%f", &h);
             left_wall_temp->data[idx(j, k, left_wall_temp->cols)].h = h;
             left_wall_temp->data[idx(j, k, left_wall_temp->cols)].surf = new;
 
-            fscanf(r_wall_temp_file, "%.6f", &temp);
+            fscanf(r_wall_temp_file, "%f", &temp);
             right_wall_temp->data[idx(j, k, right_wall_temp->cols)].temp = temp;
-            fscanf(r_wall_h_file, "%.6f", &h);
+            fscanf(r_wall_h_file, "%f", &h);
             right_wall_temp->data[idx(j, k, right_wall_temp->cols)].h = h;
             right_wall_temp->data[idx(j, k, right_wall_temp->cols)].surf = new;
 
@@ -163,7 +163,7 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
         }
 
         fprintf(masses_last_first,"%i*%i*%i\n", n, n, n); // nb_sub / rows / cols
-        fprintf(air_temp_last_first,"%i*%i*%i*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f\n", n, n, n, T_e, fluid_speed, fluid_volume, L, l, c_p, D); // nb_sub / rows / cols / | pour l'instant seul ce fichier contiendra toutes les informations de la simulation pour éviter la redodnance
+        fprintf(air_temp_last_first,"%i*%i*%i*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%i\n", n, n, n, T_e, fluid_speed, fluid_volume, L, l, c_p, D, id); // nb_sub / rows / cols / | pour l'instant seul ce fichier contiendra toutes les informations de la simulation pour éviter la redodnance
 
     // Inscription du premier tour de simulation dans les fichiers
         for (int i = 0; i < n; i++) {
@@ -238,8 +238,8 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
 
             // LA CONVECTION
 
-            for (int j = 1; j < n-  1; j++) {
-                for (int m = 1; m < air_temp[i].rows - 1; m++) { 
+            for (int j = 1; j < n - 1; j++) {
+                for (int m = 1; m < air_temp[i].rows - 1; m++) {
                     if (i != 0 && i != n - 1) {
                         float new_T_air = air_temp_calc(i, j, m, lambda, mu, h_n, n, tau, last_air_temp, D);
                         air_temp[i].data[idx(m, j, air_temp[i].cols)] = new_T_air;
@@ -248,7 +248,6 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
                         if (new_T_air > max_temp) { max_temp = new_T_air; }
                     }
                 }
-
             }
         }
 
@@ -261,7 +260,6 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
                         fprintf(f, "%.6f;", air_temp[i].data[idx(j, k, air_temp[i].cols)] - 273.0);
                     }
                     fprintf(f, "%.6f\n", air_temp[i].data[idx(j, air_temp[i].cols - 1, air_temp[i].cols)] - 273.0);
-
                 }
             }
         }
@@ -321,7 +319,7 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
 
     if (flask) {
         char* res = (char*)malloc(sizeof(char)*2096);
-        sprintf(res, "curl -X POST -d 'T_e=%.6f&Vit_air=%.6f&Vol_air=%.6f&L=%.6f&l=%.6f&n=%i&c_p=%.6f&D=%.6f&continuer_meme_si_fini=%i&nb_it_supp=%i&min_temp=%.6f&max_temp=%.6f' http://127.0.0.1:5000/", T_e, fluid_speed, fluid_volume, L, l, n, c_p, D, (int)continuer_meme_si_fini, nb_iterations_supplementaires, min_temp -273.0 , max_temp - 273.0);
+        sprintf(res, "curl -X POST -d 'T_e=%.6f&Vit_air=%.6f&Vol_air=%.6f&L=%.6f&l=%.6f&n=%i&c_p=%.6f&D=%.6f&continuer_meme_si_fini=%i&nb_it_supp=%i&min_temp=%.6f&max_temp=%.6f&id=%i' http://127.0.0.1:5000/", T_e, fluid_speed, fluid_volume, L, l, n, c_p, D, (int)continuer_meme_si_fini, nb_iterations_supplementaires, min_temp -273.0 , max_temp - 273.0, id);
         system(res);
     }
 
