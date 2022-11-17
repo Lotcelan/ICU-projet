@@ -1,4 +1,7 @@
 import pygame
+from numpy import float64 as f64
+import numpy as np
+from math import floor, ceil
 
 pygame.init()
 fpsClock = pygame.time.Clock()
@@ -29,9 +32,15 @@ def read_values(filename):
 
 
 def get_col_by_temp(temp, min_temp, max_temp):
+    """
     ecart = abs(abs(max_temp) - abs(min_temp))
     perc = abs(temp-min_temp)/ecart
     return ((perc)*255 % 256,0,(1-perc)*255 % 256) 
+    """
+    if temp != "inf" and temp != "-inf":
+        return (255 * 1 / (1 + np.exp(-temp - 15)) , 0,0)
+    else:
+        return (0,0,0)
 
 def draw_surf_element(screen, i, j, color, h, l, temperature):
     pygame.draw.rect(screen, color, pygame.Rect(i*l, j*h, l, h))
@@ -60,27 +69,29 @@ def main():
     air_temp_file = "./results/air_temp.tipe"
     (matrices, rows, cols, nb, nb_sub, min_temp, max_temp) = read_values(air_temp_file)
     
+    screen_size_x = 1000
+    screen_size_y = 1000
+
     FPS = 25
-    nb_cols = int(nb_sub / 10)
+    nb_cols = ceil(nb_sub / 10)
     nb_rows = int(nb_sub / nb_cols)
 
-    L = 1000 // (cols * nb_cols)
-    H = 1000 // (rows * nb_rows)
+    L = screen_size_x // (cols * nb_cols)
+    H = screen_size_y // (rows * nb_rows)
 
-    screen = pygame.display.set_mode([1000, 1000])
+    screen = pygame.display.set_mode([screen_size_x, screen_size_y])
 
     running = True
     frame = 0
 
     while (running and frame < nb):
-        pygame.display.set_caption(f"{frame=}")
+        pygame.display.set_caption(f"{frame=}/{nb}")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        for i in range(nb_rows):
-            for j in range(nb_cols):
-                draw_i_th_matrix(screen, H, L, matrices[frame][idx(i,j,nb_cols)], j*L*cols, i*H*rows,min_temp, max_temp, rows, cols)
+        for i in range(nb_sub):
+                draw_i_th_matrix(screen, H, L, matrices[frame][i], (i%nb_cols)*L*cols, (i//nb_cols)*H*rows,min_temp, max_temp, rows, cols)
 
         frame += 1
         
