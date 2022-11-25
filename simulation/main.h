@@ -38,7 +38,7 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
 
     const float lambda = L / n; // Longueur infinitésimale
     const float mu = l / n; // Largeur infinitésimale
-    const float height_tot = fluid_volume / (l * lambda); // On peut alors trouver la hauteur que va occuper le fluide
+    const float height_tot = fluid_volume / (l * L); // On peut alors trouver la hauteur que va occuper le fluide
     const float h_n = height_tot / n; // Soit la hauteur infinitésimale
 
     const float tau = lambda / (fluid_speed / 3.6); // temps (en s) de simulation à tour de simulation
@@ -61,6 +61,10 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
     surface_temp* floor = (surface_temp*)malloc(n * n * sizeof(surface_temp));
     surface_temp* l_wall = (surface_temp*)malloc(n * n * sizeof(surface_temp));
     surface_temp* r_wall = (surface_temp*)malloc(n * n * sizeof(surface_temp));
+
+    if (floor == NULL || l_wall == NULL || r_wall == NULL) {
+        exit(EXIT_FAILURE);
+    }
     
     floor_temp->data = floor;
     left_wall_temp->data = l_wall;
@@ -97,7 +101,6 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
             fscanf(r_wall_h_file, "%f", &h);
             right_wall_temp->data[idx(j, k, right_wall_temp->cols)].h = h;
             right_wall_temp->data[idx(j, k, right_wall_temp->cols)].surf = new;
-
         } 
     }
 
@@ -115,11 +118,18 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
         air_temp[i].rows = n;
 
         float* temp = (float*)malloc(n * n * sizeof(float));
+        if (temp == NULL) {
+            exit(EXIT_FAILURE);
+        }
         air_temp[i].data = temp;
 
+        // TEMP POUR TESTS
         for (int j = 0; j < air_temp[i].rows; j++) {
             for (int k = 0; k < air_temp[i].cols; k++) {
                 air_temp[i].data[idx(j, k, air_temp[i].cols)] = T_e;
+                if (i == 25 && j == 25 && k == 25) {
+                    air_temp[i].data[idx(j, k, air_temp[i].cols)] = T_e+20;   
+                }
             }
         }
     }
@@ -131,12 +141,15 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
         masses[i].rows = n;
 
         float* temp = (float*)malloc(n * n * sizeof(float));
+        if (temp == NULL) {
+            exit(EXIT_FAILURE);
+        }
         masses[i].data = temp;
 
         for (int j = 0; j < masses[i].rows; j++) {
             for (int k = 0; k < masses[i].cols; k++) {
                 // Formule qui provient de l'équation des gaz parfaits
-                masses[i].data[idx(j, k, masses[i].cols)] = 101325.0 * floor_temp->data[idx(j,k,floor_temp->cols)].surf.length * floor_temp->data[idx(j,k,floor_temp->cols)].surf.width * h_n * 0.0029 / (8.314*air_temp[i].data[idx(i,j,air_temp->cols)]);
+                masses[i].data[idx(j, k, masses[i].cols)] = 101325.0 * floor_temp->data[idx(j,k,floor_temp->cols)].surf.length * floor_temp->data[idx(j,k,floor_temp->cols)].surf.width * h_n * 0.0029 / (8.314 * air_temp[i].data[idx(i,j,air_temp[i].cols)]);
             }
         }
     }
@@ -163,7 +176,7 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
         }
 
         fprintf(masses_last_first,"%i*%i*%i\n", n, n, n); // nb_sub / rows / cols
-        fprintf(air_temp_last_first,"%i*%i*%i*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%i\n", n, n, n, T_e, fluid_speed, fluid_volume, L, l, c_p, D, id); // nb_sub / rows / cols / | pour l'instant seul ce fichier contiendra toutes les informations de la simulation pour éviter la redodnance
+        fprintf(air_temp_last_first,"%i*%i*%i*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%i\n", n, n, n, T_e, fluid_speed, fluid_volume, L, l, c_p, D, id); // nb_sub / rows / cols / vitesse / volume / Longueur de la surface / largeur / c_p / D / l'id de la simulation| pour l'instant seul ce fichier contiendra toutes les informations de la simulation pour éviter la redodnance
 
     // Inscription du premier tour de simulation dans les fichiers
         for (int i = 0; i < n; i++) {
@@ -191,11 +204,14 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
     // Pour avoir l'itération précédente
 
     f_matrix* last_air_temp = (f_matrix*)malloc(n*sizeof(f_matrix));
-    
+    int iteration = 1;
     for (int i = 0; i < n; i++) {
         last_air_temp[i].cols = air_temp->cols;
         last_air_temp[i].rows = air_temp->rows;
         float* temp = (float*)malloc(n * n * sizeof(float));
+        if (temp == NULL) {
+            exit(EXIT_FAILURE);
+        }
         last_air_temp[i].data = temp;
         for (int j = 0; j < last_air_temp[i].rows; j++) {
             for (int k = 0; k < last_air_temp[i].cols; k++) {
@@ -242,6 +258,7 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
                 for (int m = 1; m < air_temp[i].rows - 1; m++) {
                     if (i != 0 && i != n - 1) {
                         float new_T_air = air_temp_calc(i, j, m, lambda, mu, h_n, n, tau, last_air_temp, D);
+                        if (new_T_air > 300 || new_T_air < 200 || air_temp[i].data[idx(m, j, air_temp[i].cols)] > 300 || air_temp[i].data[idx(m, j, air_temp[i].cols)] < 200) { printf("New temp air : x=%i, y=%i, z=%i, itér=%i | old = %.6f, new = %.6f\n", i, j, m, iteration, air_temp[i].data[idx(m,j,air_temp[i].cols)], new_T_air); }
                         air_temp[i].data[idx(m, j, air_temp[i].cols)] = new_T_air;
 
                         if (new_T_air < min_temp) { min_temp = new_T_air; }
@@ -250,6 +267,7 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
                 }
             }
         }
+        iteration++;
 
         // Inscription des données de température de ce tour de simulation dans le fichier
 
@@ -276,10 +294,6 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
         // COPIE POUR AVOIR ITERATION PRECEDENTE
         
         for (int i = 0; i < n; i++) {
-
-            last_air_temp[i].cols = air_temp[i].cols;
-            last_air_temp[i].rows = air_temp[i].rows;
-            
             for (int j = 0; j < last_air_temp[i].rows; j++) {
                 for (int k = 0; k < last_air_temp[i].cols; k++) {
                     last_air_temp[i].data[idx(j, k, last_air_temp[i].cols)] = air_temp[i].data[idx(j, k, last_air_temp[i].cols)];
@@ -288,12 +302,13 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
         }
     }
 
+    printf("Min_temp = %.6f; Max_temp = %.6f\n", min_temp-273.0, max_temp-273.0);
+
     if (print_to_file) {
         // A la toute fin du fichier contenant toute la simulation on ajoute la température min et max
         fprintf(f,"%.6f;%.6f\n", min_temp-273.0, max_temp-273.0);
         fclose(f);
 
-        printf("Min_temp = %.6f; Max_temp = %.6f\n", min_temp-273.0, max_temp-273.0);
         
         // Inscription du dernier tour de simulation dans les fichiers dédiés
 

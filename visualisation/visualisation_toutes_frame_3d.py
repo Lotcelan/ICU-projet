@@ -32,7 +32,7 @@ def read_values(filename):
 
 
 def get_col_by_temp(temp, min_temp, max_temp):
-    """
+    
     ecart = abs(abs(max_temp) - abs(min_temp))
     perc = abs(temp-min_temp)/ecart
     return ((perc)*255 % 256,0,(1-perc)*255 % 256) 
@@ -41,6 +41,7 @@ def get_col_by_temp(temp, min_temp, max_temp):
         return (255 * 1 / (1 + np.exp(-temp - 15)) , 0,0)
     else:
         return (0,0,0)
+    """
 
 def draw_surf_element(screen, i, j, color, h, l, temperature):
     pygame.draw.rect(screen, color, pygame.Rect(i*l, j*h, l, h))
@@ -66,7 +67,7 @@ def main():
         - air_temp_file : fichier qui contient l'ensemble des matrices contenant les températures du fluide à la première à chaque itération
         - masses_last_fist_file : de même avec les masses de chaque subdivision de fluide
     """
-    air_temp_file = "./results/air_temp.tipe"
+    air_temp_file = "./results/air_temp_0.tipe"
     (matrices, rows, cols, nb, nb_sub, min_temp, max_temp) = read_values(air_temp_file)
     
     screen_size_x = 1000

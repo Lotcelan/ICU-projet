@@ -6,6 +6,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdbool.h>
+#include <assert.h>
 
 
 typedef struct f_matrix
@@ -42,7 +43,11 @@ typedef struct idx_couple
     int snd;
 } idx_couple;
 
-int idx(int i, int j, int size) { return i*size + j; }
+int idx(int i, int j, int size) { 
+    if (j > size || i > size) { printf("Index error : i=%i; j=%i; size =%i", i, j, size); } // matrice carrée
+    return i*size + j;
+    
+    }
 
 
 #endif
