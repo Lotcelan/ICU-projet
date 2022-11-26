@@ -12,12 +12,12 @@ int main(int argc, char **argv) {
         - n : nombre de subdivisions en petit pavés de la masse d'air
         - c_p : la capacité calorifique de l'air (ou autre fluide considéré) en J.m^(-3).K^(-1)
         - D (m^2.s^(-1)): coefficient de diffusion de l'air (ou du fluide considéré)
-        - config_l_wall_temp : 
-        - config_floor_temp :  
-        - config_r_wall_temp : 
-        - config_l_wall_h : 
-        - config_floor_h : 
-        - config_r_wall_h : 
+        - config_l_wall_temp : explicite
+        - config_floor_temp :  explicite
+        - config_r_wall_temp : explicite
+        - config_l_wall_h : explicite
+        - config_floor_h : explicite
+        - config_r_wall_h : explicite
         - continuer_meme_si_fini : comme la simulation s'arrête à l'instant ou l'entièreté du fluide est sorti de la zone, il peut être intéressant de regarder plus longtemps l'évolution de la température, ce booléen s'occupe de ça
         - nb_iterations_supplementaires : nombre de tours de simulation faits en plus si le booléen précédent est 'vrai'
         - save_air_temp_filename : nom du fichier contenant l'entièreté de la simulation
@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 
    // Exemple d'utilisation ./main 288 5 7.5 5 5 50 1256 0.03 ../config/left_wall_temp_0.conf ../config/floor_temp_0.conf ../config/right_wall_temp_0.conf ../config/left_wall_h_0.conf ../config/floor_h_0.conf ../config/right_wall_h_0.conf 0 10 ../results/air_temp.tipe ../results/air_temp_last_first.tipe ../results/masses_temp_last_first.tipe 1 1 42
 
-    float T_e, Vitesse_air, Volume_air, L, l, c_p, D;
+    double T_e, Vitesse_air, Volume_air, L, l, c_p, D;
     int n, continuer_meme_si_fini, nb_it_supp, flask, print_to_file, id;
 
     char* save_air_temp_filename_buff = (char*)malloc(sizeof(char)*64);

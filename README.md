@@ -92,6 +92,7 @@ Une installation classique de C suffit.
 
 ## Simulation
 
-- Possibilité de customiser plus précisément que par un `offset` les températures du sol et des murs
 - Trouver `h`
 - Etudier l'impact de la végétation sur les paramètres de la simulation (étant donné que c'est une solution contre les ICU)
+- Trouver les raisons de divergence selon les valeurs de h et D
+- Possiblité de faire le gen_config sur juste 1 config de manière facile

@@ -78,8 +78,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     FILE* floor_h_file = fopen(config_floor_h, "r");
     FILE* r_wall_h_file = fopen(config_r_wall_h, "r");
 
-    double temp;
-    double h;
+    float temp;
+    float h;
     for (int j = 0; j < floor_temp->rows; j++) {        // On suppose que murs et sol ont la même dimension
         for (int k = 0; k < floor_temp->cols; k++) {
             surface new = { .width = mu, .length = lambda};
@@ -123,13 +123,15 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         }
         air_temp[i].data = temp;
 
-        // TEMP POUR TESTS
         for (int j = 0; j < air_temp[i].rows; j++) {
             for (int k = 0; k < air_temp[i].cols; k++) {
                 air_temp[i].data[idx(j, k, air_temp[i].cols)] = T_e;
+                // TEMP POUR TESTS
+                /*
                 if (i == 25 && j == 25 && k == 25) {
                     air_temp[i].data[idx(j, k, air_temp[i].cols)] = T_e+20;   
                 }
+                */
             }
         }
     }
