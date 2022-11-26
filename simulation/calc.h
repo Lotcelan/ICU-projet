@@ -24,12 +24,6 @@ double air_temp_calc(int x, int y, int z, double lambda, double mu, double h_n, 
     double temp_x_plus_1, temp_x_moins_1, temp_y_plus_1, temp_y_moins_1, temp_z_plus_1, temp_z_moins_1; // Représentent à l'itération précédente les températures décalées de + ou - 1 selon x, y ou z
 
     assert( x > 0 && x < nb_subd - 1 && y > 0 && y < prev_temp[x].cols && z > 0 && z < prev_temp[x].rows);
-    //if (x > 0)                 { temp_x_moins_1 = prev_temp[x-1].data[idx( z , y , prev_temp[x].cols)]; } else { temp_x_moins_1 = prev_temp[x].data[idx(z, y, prev_temp[x].cols)]; }
-    //if (x < nb_subd - 1)       { temp_x_plus_1  = prev_temp[x+1].data[idx( z , y , prev_temp[x].cols)]; } else { temp_x_plus_1  = prev_temp[x].data[idx(z, y, prev_temp[x].cols)]; }
-    //if (y > 0)                 { temp_y_moins_1 = prev_temp[ x ].data[idx( z ,y-1, prev_temp[x].cols)]; } else { temp_y_moins_1 = prev_temp[x].data[idx(z, y, prev_temp[x].cols)]; }
-    //if (y < prev_temp[x].cols) { temp_y_plus_1  = prev_temp[ x ].data[idx( z ,y+1, prev_temp[x].cols)]; } else { temp_y_plus_1  = prev_temp[x].data[idx(z, y, prev_temp[x].cols)]; }
-    //if (z > 0)                 { temp_z_moins_1 = prev_temp[ x ].data[idx(z-1, y , prev_temp[x].cols)]; } else { temp_z_moins_1 = prev_temp[x].data[idx(z, y, prev_temp[x].cols)]; }
-    //if (z < prev_temp[x].rows) { temp_z_plus_1  = prev_temp[ x ].data[idx(z+1, y , prev_temp[x].cols)]; } else { temp_z_plus_1  = prev_temp[x].data[idx(z, y, prev_temp[x].cols)]; }
     temp_x_moins_1 = prev_temp[x-1].data[idx( z , y , prev_temp[x].cols)];
     temp_x_plus_1  = prev_temp[x+1].data[idx( z , y , prev_temp[x].cols)];
     temp_y_moins_1 = prev_temp[ x ].data[idx( z ,y-1, prev_temp[x].cols)];

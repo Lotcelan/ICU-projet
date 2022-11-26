@@ -206,7 +206,6 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     // Pour avoir l'itération précédente
 
     f_matrix* last_air_temp = (f_matrix*)malloc(n*sizeof(f_matrix));
-    int iteration = 1;
     for (int i = 0; i < n; i++) {
         last_air_temp[i].cols = air_temp->cols;
         last_air_temp[i].rows = air_temp->rows;
@@ -222,9 +221,14 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         }
     }
 
+    float iteration = 1;
+    float nb_total_iteration = (n - 1) * 2;
+    float nb_decoupage = 20;
 
     while (idx_c.snd != 0 || (continuer_meme_si_fini && count < nb_iterations_supplementaires)) {
-
+        if ((int)iteration % (100 / (int)nb_decoupage) == 0) {
+            printf("%.6f%%\n", iteration * 100 / nb_total_iteration);
+        }
         if (continuer_meme_si_fini && idx_c.snd <= 0) {
             count++;
         }
@@ -302,6 +306,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
             }
         }
     }
+
+    printf("100%%\n");
 
     printf("Min_temp = %.6f; Max_temp = %.6f\n", min_temp-273.0, max_temp-273.0);
 

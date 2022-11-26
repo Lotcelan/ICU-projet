@@ -95,4 +95,6 @@ Une installation classique de C suffit.
 - Trouver `h`
 - Etudier l'impact de la végétation sur les paramètres de la simulation (étant donné que c'est une solution contre les ICU)
 - Trouver les raisons de divergence selon les valeurs de h et D
+  - Meilleure méthode d'intégration peut-être ?
+  - Ou travailler avec des unités adimensionnées (raisonner en "n fois temps caractéristique")
 - Possiblité de faire le gen_config sur juste 1 config de manière facile
