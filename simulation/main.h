@@ -15,13 +15,13 @@ char* file_id_ext(char* name, int id) {
 }
 
 /* Possibilité pour calculer h
-float calculer_h(float delta_t, float L) {
+double calculer_h(double delta_t, double L) {
     return 1.32 * sqrt(sqrt(abs(delta_t/L)));
 }
 */
 
-float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, float l,
-    int n, float c_p, float D, char* config_l_wall_temp, char*  config_floor_temp, char*  config_r_wall_temp, char*  config_l_wall_h, char*  config_floor_h, char*  config_r_wall_h,
+double* simulation(double T_e, double fluid_speed, double fluid_volume, double L, double l,
+    int n, double c_p, double D, char* config_l_wall_temp, char*  config_floor_temp, char*  config_r_wall_temp, char*  config_l_wall_h, char*  config_floor_h, char*  config_r_wall_h,
     bool continuer_meme_si_fini, int nb_iterations_supplementaires, char* save_air_temp_filename,
     char* air_temp_last_first_file, char* masses_last_first_file, bool flask, bool print_to_file, int id)
 {
@@ -36,12 +36,12 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
     s_t_matrix* left_wall_temp = (s_t_matrix*)malloc(sizeof(s_t_matrix)); // Matrice contenant les températures du mur gauche
     s_t_matrix* right_wall_temp = (s_t_matrix*)malloc(sizeof(s_t_matrix)); // Matrice contenant les températures du mur droit
 
-    const float lambda = L / n; // Longueur infinitésimale
-    const float mu = l / n; // Largeur infinitésimale
-    const float height_tot = fluid_volume / (l * L); // On peut alors trouver la hauteur que va occuper le fluide
-    const float h_n = height_tot / n; // Soit la hauteur infinitésimale
+    const double lambda = L / n; // Longueur infinitésimale
+    const double mu = l / n; // Largeur infinitésimale
+    const double height_tot = fluid_volume / (l * L); // On peut alors trouver la hauteur que va occuper le fluide
+    const double h_n = height_tot / n; // Soit la hauteur infinitésimale
 
-    const float tau = lambda / (fluid_speed / 3.6); // temps (en s) de simulation à tour de simulation
+    const double tau = lambda / (fluid_speed / 3.6); // temps (en s) de simulation à tour de simulation
 
     printf("Lambda = %.6f; mu = %.6f; h_n = %.6f; tau = %.6f\n", lambda, mu, h_n, tau);
 
@@ -78,8 +78,8 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
     FILE* floor_h_file = fopen(config_floor_h, "r");
     FILE* r_wall_h_file = fopen(config_r_wall_h, "r");
 
-    float temp;
-    float h;
+    double temp;
+    double h;
     for (int j = 0; j < floor_temp->rows; j++) {        // On suppose que murs et sol ont la même dimension
         for (int k = 0; k < floor_temp->cols; k++) {
             surface new = { .width = mu, .length = lambda};
@@ -117,7 +117,7 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
         air_temp[i].cols = n;
         air_temp[i].rows = n;
 
-        float* temp = (float*)malloc(n * n * sizeof(float));
+        double* temp = (double*)malloc(n * n * sizeof(double));
         if (temp == NULL) {
             exit(EXIT_FAILURE);
         }
@@ -140,7 +140,7 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
         masses[i].cols = n;
         masses[i].rows = n;
 
-        float* temp = (float*)malloc(n * n * sizeof(float));
+        double* temp = (double*)malloc(n * n * sizeof(double));
         if (temp == NULL) {
             exit(EXIT_FAILURE);
         }
@@ -196,8 +196,8 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
     idx_c.fst = n-1;
     idx_c.snd = n-1;
 
-    float min_temp = T_e;
-    float max_temp = T_e;
+    double min_temp = T_e;
+    double max_temp = T_e;
 
     int count = 0;
 
@@ -208,7 +208,7 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
     for (int i = 0; i < n; i++) {
         last_air_temp[i].cols = air_temp->cols;
         last_air_temp[i].rows = air_temp->rows;
-        float* temp = (float*)malloc(n * n * sizeof(float));
+        double* temp = (double*)malloc(n * n * sizeof(double));
         if (temp == NULL) {
             exit(EXIT_FAILURE);
         }
@@ -233,11 +233,11 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
 
                 // LA CONDUCTION
                 
-                float new_T_floor = floor_temp_calc(i, j, lambda, mu, tau, floor_temp->data[idx(i, n - 1 - idx_c.snd + c, floor_temp->cols)], last_air_temp, c_p, masses[i].data[idx(air_temp[i].rows - 1, j, masses[i].cols)], fluid_speed);
+                double new_T_floor = floor_temp_calc(i, j, lambda, mu, tau, floor_temp->data[idx(i, n - 1 - idx_c.snd + c, floor_temp->cols)], last_air_temp, c_p, masses[i].data[idx(air_temp[i].rows - 1, j, masses[i].cols)], fluid_speed);
                 air_temp[i].data[idx(air_temp[i].rows - 1, j, air_temp[i].cols)] = new_T_floor;
 
-                float new_T_l_wall = wall_temp_calc(i, j, 0, lambda, mu, tau, left_wall_temp->data[idx(i, n - 1 - idx_c.snd + c, left_wall_temp->cols)], last_air_temp, c_p, masses[0].data[idx(i, j, masses[0].cols)], fluid_speed);
-                float new_T_r_wall = wall_temp_calc(i, j, n - 1, lambda, mu, tau, right_wall_temp->data[idx(i, n - 1 - idx_c.snd + c, right_wall_temp->cols)], last_air_temp, c_p, masses[n-1].data[idx(i, j, masses[n-1].cols)], fluid_speed);
+                double new_T_l_wall = wall_temp_calc(i, j, 0, lambda, mu, tau, left_wall_temp->data[idx(i, n - 1 - idx_c.snd + c, left_wall_temp->cols)], last_air_temp, c_p, masses[0].data[idx(i, j, masses[0].cols)], fluid_speed);
+                double new_T_r_wall = wall_temp_calc(i, j, n - 1, lambda, mu, tau, right_wall_temp->data[idx(i, n - 1 - idx_c.snd + c, right_wall_temp->cols)], last_air_temp, c_p, masses[n-1].data[idx(i, j, masses[n-1].cols)], fluid_speed);
 
                 air_temp[0].data[idx(i, j, air_temp[0].cols)] = new_T_l_wall;
                 air_temp[n-1].data[idx(i, j, air_temp[n-1].cols)] = new_T_r_wall;
@@ -257,8 +257,7 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
             for (int j = 1; j < n - 1; j++) {
                 for (int m = 1; m < air_temp[i].rows - 1; m++) {
                     if (i != 0 && i != n - 1) {
-                        float new_T_air = air_temp_calc(i, j, m, lambda, mu, h_n, n, tau, last_air_temp, D);
-                        if (new_T_air > 300 || new_T_air < 200 || air_temp[i].data[idx(m, j, air_temp[i].cols)] > 300 || air_temp[i].data[idx(m, j, air_temp[i].cols)] < 200) { printf("New temp air : x=%i, y=%i, z=%i, itér=%i | old = %.6f, new = %.6f\n", i, j, m, iteration, air_temp[i].data[idx(m,j,air_temp[i].cols)], new_T_air); }
+                        double new_T_air = air_temp_calc(i, j, m, lambda, mu, h_n, n, tau, last_air_temp, D);
                         air_temp[i].data[idx(m, j, air_temp[i].cols)] = new_T_air;
 
                         if (new_T_air < min_temp) { min_temp = new_T_air; }
@@ -328,7 +327,7 @@ float* simulation(float T_e, float fluid_speed, float fluid_volume, float L, flo
     fclose(masses_last_first);
     fclose(air_temp_last_first);
 
-    float* res = malloc(sizeof(float)*2);
+    double* res = malloc(sizeof(double)*2);
     res[0] = min_temp - 273.0;
     res[1] = max_temp - 273.0;
 

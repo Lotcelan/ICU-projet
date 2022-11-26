@@ -13,21 +13,21 @@ typedef struct f_matrix
 {
     int cols; // Ce sera normalement toujours n
     int rows; // Ce sera normalement toujours n
-    float* data; //1 dim float array
+    double* data; //1 dim double array
 } f_matrix;
 
 typedef struct surface
 {
-    float width;
-    float length;
+    double width;
+    double length;
 
 } surface;
 
 typedef struct surface_temp
 {
     surface surf;
-    float temp;
-    float h;
+    double temp;
+    double h;
 } surface_temp;
 
 typedef struct s_t_matrix
