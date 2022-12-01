@@ -97,4 +97,3 @@ Une installation classique de C suffit.
 - Trouver les raisons de divergence selon les valeurs de h et D
   - Meilleure méthode d'intégration peut-être ?
   - Ou travailler avec des unités adimensionnées (raisonner en "n fois temps caractéristique")
-- Possiblité de faire le gen_config sur juste 1 config de manière facile

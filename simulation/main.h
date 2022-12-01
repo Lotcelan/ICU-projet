@@ -29,6 +29,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         Effectue la simulation (arguments détaills dans main.c)
     */
 
+    double 
+
     f_matrix* air_temp = (f_matrix*)malloc(n * sizeof(f_matrix)); // Contiendra en i_e case la matrice de températures de la i_e subdivision selon la largeur
     f_matrix* masses = (f_matrix*)malloc(n * sizeof(f_matrix)); // Contiendra en i_e case la matrice de masses de la i_e subdivision selon la largeur
 
