@@ -76,10 +76,10 @@ def main():
 
     nb_subdivision = 50
 
-    vitesses = [5,15]
-    volumes = [0.5,2,7.5,10]
-    L_l = [0.5,1,5,10]
-    D = [0.03,0.05,0.1,0.176]
+    vitesses = [5, 7.5, 15]
+    volumes = [0.5, 2, 7.5, 10]
+    L_l = [0.5, 1,5, 5, 10]
+    D = [0.0002, 0.005, 0.01, 0.176]
 
     configs = read_user_conf()
 

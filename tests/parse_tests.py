@@ -23,6 +23,11 @@ def parse_file(filename):
 def main(args):
     """
         Une fois les tests effectués, on veut pouvoir les exploiter. La variable parsed_content contient la liste des résultats de chaque test.
+        Arguments :
+            -> -d : afficher le graphe
+            -> -Ma [float] : donne le numéro des simulations (ordre dans le fichier test.txt) dont la température max est plus grande qu'un seuil donné
+            -> -b [float] [float] : donne le numéro des simulations (odre dans le fichier tests.txt) dont la température min est plus grande que le premier flottant et la temp max plus petite que la seconde valeur
+            -> -be [float] [float] [file_path] : donne le numéro des simulations (odre dans le fichier tests.txt) dont la température min est plus grande que le premier flottant et la temp max plus petite que la seconde valeur ET exporte les données dans [file_name] de chaque simulation
     """
 
     parsed_content = parse_file("../results/tests.txt")
@@ -40,6 +45,47 @@ def main(args):
             print(f"Les simulations qui ont donné une max_temp plus grande (strictement) que {value} sont : {res}")
         except:
             print("Erreur, entrez une valeur cohérente")
+
+    if (a := "-b" in args) or (b := "--between" in args):
+        i = args.index("-b" if a else "--between")
+        try:
+            min_floor = float(args[i+1])
+            max_ceil = float(args[i+2])
+            res = []
+            i = 0
+            for line in parsed_content:
+                if (float(line[-2][1])) != "inf" and (float(line[-2][1])) <= max_ceil and float(line[-3][1]) != "-inf" and float(line[-3][1]) >= min_floor:
+                    res.append(i)
+                i+=1
+            print(f"Les simulations qui ont donné une max_temp plus petite que {max_ceil} et une min_temp plus grande que {min_floor} sont : {res}")
+        except Exception as e:
+            print(f"Erreur, entrez une valeur cohérente !\n {e}")
+
+    if (a := "-be" in args) or (b := "--between-export" in args):
+        i = args.index("-be" if a else "--between-export")
+        try:
+            min_floor = float(args[i+1])
+            max_ceil = float(args[i+2])
+            export_file = args[i+3]
+            res_id = []
+            res_content = []
+            i = 0
+            for line in parsed_content:
+                if (float(line[-2][1])) != "inf" and (float(line[-2][1])) <= max_ceil and float(line[-3][1]) != "-inf" and float(line[-3][1]) >= min_floor:
+                    res_id.append(i)
+                    res_content.append(line)
+                i+=1
+            print(f"Les simulations qui ont donné une max_temp plus petite que {max_ceil} et une min_temp plus grande que {min_floor} sont : {res_id}")
+            with open(export_file, "w+") as f:
+                for l in res_content:
+                    for (oui, val) in l:
+                        f.write(f"{oui} = {val} | ")
+                    f.write("\n")
+            
+
+        except Exception as e:
+            print(f"Erreur, entrez une valeur cohérente !\n {e}")
+
 
     if "-d" in args or "--display-plot" in args:
 
