@@ -72,6 +72,7 @@ def main(args):
             i = 0
             for line in parsed_content:
                 if (float(line[-2][1])) != "inf" and (float(line[-2][1])) <= max_ceil and float(line[-3][1]) != "-inf" and float(line[-3][1]) >= min_floor:
+                    print(f"Checking {float(line[-3][1])} and {float(line[-2][1])}")
                     res_id.append(i)
                     res_content.append(line)
                 i+=1
