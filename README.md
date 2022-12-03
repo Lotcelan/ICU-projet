@@ -63,7 +63,10 @@ Une fois les tests effectués, on peut les exploiter :
 
 ### Une simulation quelconque
 Avec comme paramètres : `T_e` = 288 K; `Vitesse_air` = 5 km/h; `Volume_air` = 7.5 m³; `Largeur` et `Longueur` = 5 m; `Subdivisions` = 50; `D` = 0.00025; `h` est le même partout : 3 W/K/m²
-![video](./assets/fixed_h_control_d_0_00025-2022-12-03_18.34.31.mp4)
+
+<video width="320" height="240" controls>
+  <source src="./assets/fixed_h_control_d_0_00025-2022-12-03_18.34.31.mp4" type="video/mp4">
+</video>
 
 ## Exploitation
 
