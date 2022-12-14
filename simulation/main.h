@@ -126,12 +126,6 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         for (int j = 0; j < air_temp[i].rows; j++) {
             for (int k = 0; k < air_temp[i].cols; k++) {
                 air_temp[i].data[idx(j, k, air_temp[i].cols)] = T_e;
-                // TEMP POUR TESTS
-                /*
-                if (i == 25 && j == 25 && k == 25) {
-                    air_temp[i].data[idx(j, k, air_temp[i].cols)] = T_e+20;   
-                }
-                */
             }
         }
     }
@@ -224,10 +218,10 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     float iteration = 1;
     float nb_total_iteration = (n - 1) * 2;
     float nb_decoupage = 20;
-
+    printf("\n");
     while (idx_c.snd != 0 || (continuer_meme_si_fini && count < nb_iterations_supplementaires)) {
         if ((int)iteration % (100 / (int)nb_decoupage) == 0) {
-            printf("%.6f%%\n", iteration * 100 / nb_total_iteration);
+            printf("\x1b[A\r%.6f%%          \n", iteration * 100 / nb_total_iteration);
         }
         if (continuer_meme_si_fini && idx_c.snd <= 0) {
             count++;
