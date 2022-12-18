@@ -71,8 +71,11 @@ Avec comme paramètres : `T_e` = 288 K; `Vitesse_air` = 5 km/h; `Volume_air` = 7
 ### Variation d'enthalpie
 
 - Différentes configurations avec les mêmes coefficients de convection et de diffusion (et `offset_floor` = `offset_l_wall` = `offset_r_wall`)
-
+(Attention, je travaillais ici avec une version du projet très ancinne d'où "l'absurdité" de ces valeurs)
 ![graphe](./assets/K%3D3000_D%3D0.03_all_same_offset.png)
+
+- On constate que pour des mêmes données initiales : `T_e` = 288 K; `Vitesse_air` = 5 km/h; `Volume_air` = 10 m³; `Largeur` et `Longueur` = 15 m; `D` très très petit (peut être trop); `h` est le même partout : 3 W/K/m²; selon le nombre de subdivisions, on tend vers une normalisation de la variation d'enthalpie :
+![graphe_var_subd](./assets/var_enth_subd.png)
 
 # Installation
 

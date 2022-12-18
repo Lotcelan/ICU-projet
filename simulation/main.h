@@ -30,6 +30,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     */
 
     f_matrix* air_temp = (f_matrix*)malloc(n * sizeof(f_matrix)); // Contiendra en i_e case la matrice de températures de la i_e subdivision selon la largeur
+    f_matrix* first_iteration = (f_matrix*)malloc(n * sizeof(f_matrix)); // Pour la variation d'enthalpie
+    
     f_matrix* masses = (f_matrix*)malloc(n * sizeof(f_matrix)); // Contiendra en i_e case la matrice de masses de la i_e subdivision selon la largeur
 
     s_t_matrix* floor_temp = (s_t_matrix*)malloc(sizeof(s_t_matrix)); // Matrice contenant les températures du sol
@@ -40,6 +42,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     const double mu = l / n; // Largeur infinitésimale
     const double height_tot = fluid_volume / (l * L); // On peut alors trouver la hauteur que va occuper le fluide
     const double h_n = height_tot / n; // Soit la hauteur infinitésimale
+
+    double variation_enthalpie_totale = 0;
 
     const double tau = lambda / (fluid_speed / 3.6); // temps (en s) de simulation à tour de simulation
 
@@ -130,6 +134,25 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         }
     }
 
+    // PREMIERE ITERATION
+
+    for (int i = 0; i < n; i++) {
+        first_iteration[i].cols = n;
+        first_iteration[i].rows = n;
+
+        double* temp = (double*)malloc(n * n * sizeof(double));
+        if (temp == NULL) {
+            exit(EXIT_FAILURE);
+        }
+        first_iteration[i].data = temp;
+
+        for (int j = 0; j < air_temp[i].rows; j++) {
+            for (int k = 0; k < air_temp[i].cols; k++) {
+                first_iteration[i].data[idx(j, k, air_temp[i].cols)] = air_temp[i].data[idx(j, k, air_temp[i].cols)];
+            }
+        }
+    }
+
     // MASSES
 
     for (int i = 0; i < n; i++) {
@@ -155,6 +178,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     FILE* masses_last_first = fopen(masses_last_first_file, "w");
     FILE* air_temp_last_first = fopen(air_temp_last_first_file, "w");
+
 
 
     if (print_to_file) {
@@ -267,7 +291,6 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
             }
         }
         iteration++;
-
         // Inscription des données de température de ce tour de simulation dans le fichier
 
         if (print_to_file) {
@@ -303,7 +326,6 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     printf("100%%\n");
 
-    printf("Min_temp = %.6f; Max_temp = %.6f\n", min_temp-273.0, max_temp-273.0);
 
     if (print_to_file) {
         // A la toute fin du fichier contenant toute la simulation on ajoute la température min et max
@@ -329,13 +351,24 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     fclose(masses_last_first);
     fclose(air_temp_last_first);
 
-    double* res = malloc(sizeof(double)*2);
+    // Calcul de la variation d'enthalpie
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < masses[i].rows; j++) {
+            for (int k = 0; k < masses[i].cols; k++) {
+                variation_enthalpie_totale += masses[i].data[idx(j, k, masses[i].cols)] * c_p * (air_temp[i].data[idx(j, k, air_temp[i].cols)] - first_iteration[i].data[idx(j, k, first_iteration[i].cols)]);
+            }
+        }
+    }    
+
+    printf("Min_temp = %.6f; Max_temp = %.6f; Var enth = %.6f\n", min_temp-273.0, max_temp-273.0, variation_enthalpie_totale);
+
+    double* res = (double*)malloc(sizeof(double)*2);
     res[0] = min_temp - 273.0;
     res[1] = max_temp - 273.0;
 
     if (flask) {
         char* res = (char*)malloc(sizeof(char)*2096);
-        sprintf(res, "curl -X POST -d 'T_e=%.6f&Vit_air=%.6f&Vol_air=%.6f&L=%.6f&l=%.6f&n=%i&c_p=%.6f&D=%.6f&continuer_meme_si_fini=%i&nb_it_supp=%i&min_temp=%.6f&max_temp=%.6f&id=%i' http://127.0.0.1:5000/", T_e, fluid_speed, fluid_volume, L, l, n, c_p, D, (int)continuer_meme_si_fini, nb_iterations_supplementaires, min_temp -273.0 , max_temp - 273.0, id);
+        sprintf(res, "curl -X POST -d 'T_e=%.6f&Vit_air=%.6f&Vol_air=%.6f&L=%.6f&l=%.6f&n=%i&c_p=%.6f&D=%.6f&continuer_meme_si_fini=%i&nb_it_supp=%i&var_enth=%6f&min_temp=%.6f&max_temp=%.6f&id=%i' http://127.0.0.1:5000/", T_e, fluid_speed, fluid_volume, L, l, n, c_p, D, (int)continuer_meme_si_fini, nb_iterations_supplementaires, variation_enthalpie_totale, min_temp -273.0 , max_temp - 273.0, id);
         system(res);
     }
 

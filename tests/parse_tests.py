@@ -92,19 +92,22 @@ def main(args):
 
         min_temps = [float(line[-3][1]) if float(line[-3][1]) != float("-inf") else 0 for line in parsed_content]
         max_temps = [float(line[-2][1]) if float(line[-2][1]) != float("inf") else 0 for line in parsed_content]
-
+        enthalpies  = [float(line[-4][1]) for line in parsed_content]
 
         indexes = [i for i in range(len(parsed_content))]
         
-        df = pd.DataFrame([[str(i),min_temps[i], max_temps[i]] for i in indexes], columns=["Idx","Min_temp","Max_temp"])
-
-        df.plot(x="Idx",kind="bar",title="Oui")
-
-        plt.ylim([-50,50])
+        #df = pd.DataFrame([[str(i),min_temps[i], max_temps[i]] for i in indexes], columns=["Idx","Min_temp","Max_temp"])
+        df = pd.DataFrame([[str((i+1)*100),enthalpies[i]] for i in indexes], columns=["Nb_subd","Enthalpies"])
+#
+        df.plot(x="Nb_subd",kind="bar",title="Enthalpies")
+#
+        #plt.ylim([-50,50])
         plt.grid(True)
         
-        plt.axhline(y = 15, color = 'r', linestyle = '-') # Si l'on a fait tous les tests a une T_e identique
+        #plt.axhline(y = 15, color = 'r', linestyle = '-') # Si l'on a fait tous les tests a une T_e identique
         
+        
+
         plt.show()
 
 if __name__ == "__main__":
