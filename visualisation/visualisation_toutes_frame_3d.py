@@ -108,6 +108,7 @@ def main():
     screen_size_y = 1000
 
     FPS = 25
+    nb_frames_per_display = 15
     nb_cols = ceil(nb_sub / 10)
     nb_rows = int(nb_sub / nb_cols)
 
@@ -128,11 +129,12 @@ def main():
                 running = False
 
         i = 0
-        mat_bloc = next(mat_gen)
+        for _ in range(nb_frames_per_display):
+            mat_bloc = next(mat_gen)
         for mat in mat_bloc:
             draw_i_th_matrix(screen, H, L, mat, (i%nb_cols)*L*cols, (i//nb_cols)*H*rows,min_temp, max_temp, rows, cols)
             i+=1
-        frame += 1
+        frame += nb_frames_per_display
         
         print(frame)
 

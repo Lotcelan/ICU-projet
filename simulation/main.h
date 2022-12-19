@@ -86,25 +86,25 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     float h;
     for (int j = 0; j < floor_temp->rows; j++) {        // On suppose que murs et sol ont la même dimension
         for (int k = 0; k < floor_temp->cols; k++) {
-            surface new = { .width = mu, .length = lambda};
+            surface new_surf = { .width = mu, .length = lambda};
 
             fscanf(floor_temp_file, "%f", &temp);
             floor_temp->data[idx(j, k, floor_temp->cols)].temp = temp;
             fscanf(floor_h_file, "%f", &h);
             floor_temp->data[idx(j, k, floor_temp->cols)].h = h; // 1/h_i + e/lambda (1/hi dépend e = épaisseur surface en (m) et lambda = conductivité thermique (ici celle du béton)); cf https://fr.wikipedia.org/wiki/Coefficient_de_convection_thermique
-            floor_temp->data[idx(j, k, floor_temp->cols)].surf = new;
+            floor_temp->data[idx(j, k, floor_temp->cols)].surf = new_surf;
 
             fscanf(l_wall_temp_file, "%f", &temp);
             left_wall_temp->data[idx(j, k, left_wall_temp->cols)].temp = temp;
             fscanf(l_wall_h_file, "%f", &h);
             left_wall_temp->data[idx(j, k, left_wall_temp->cols)].h = h;
-            left_wall_temp->data[idx(j, k, left_wall_temp->cols)].surf = new;
+            left_wall_temp->data[idx(j, k, left_wall_temp->cols)].surf = new_surf;
 
             fscanf(r_wall_temp_file, "%f", &temp);
             right_wall_temp->data[idx(j, k, right_wall_temp->cols)].temp = temp;
             fscanf(r_wall_h_file, "%f", &h);
             right_wall_temp->data[idx(j, k, right_wall_temp->cols)].h = h;
-            right_wall_temp->data[idx(j, k, right_wall_temp->cols)].surf = new;
+            right_wall_temp->data[idx(j, k, right_wall_temp->cols)].surf = new_surf;
         } 
     }
 
@@ -278,10 +278,11 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
             // LA CONVECTION
 
-            for (int j = 1; j < n - 1; j++) {
+            for (int j = 1; j < air_temp[i].cols - 1; j++) {
                 for (int m = 1; m < air_temp[i].rows - 1; m++) {
                     if (i != 0 && i != n - 1) {
-                        double new_T_air = air_temp_calc(i, j, m, lambda, mu, h_n, n, tau, last_air_temp, D);
+                        double new_T_air = air_temp_calc(i, j, m, lambda, mu, h_n, n, tau, last_air_temp, D, fluid_speed);
+                        if (i == 10 && j == 40 && m == 10) { printf("Pour la cellule en 10 10 40, var_temp = %.6f\n", new_T_air - air_temp[i].data[idx(m, j, air_temp[i].cols)]); }
                         air_temp[i].data[idx(m, j, air_temp[i].cols)] = new_T_air;
 
                         if (new_T_air < min_temp) { min_temp = new_T_air; }
@@ -326,6 +327,77 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     printf("100%%\n");
 
+
+    
+    // EQUILIBRE THERMIQUE (fonction temporaire !)
+    double e = 1;
+    int nb_it_eq = 0;
+    while (e >= 0.001) {
+        nb_it_eq++;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < last_air_temp[i].rows; j++) {
+                for (int k = 0; k < last_air_temp[i].cols; k++) {
+                    last_air_temp[i].data[idx(j, k, last_air_temp[i].cols)] = air_temp[i].data[idx(j, k, last_air_temp[i].cols)];
+                }
+            }
+        }
+        //printf("Mise à l'équilibre\n");
+        
+
+            // LA CONVECTION
+        for (int i = 0; i < n; i++) {
+            for (int j = 1; j < n - 1; j++) {
+                for (int m = 1; m < air_temp[i].rows - 1; m++) {
+                    if (i != 0 && i != n - 1) {
+                        double new_T_air = air_temp_calc(i, j, m, lambda, mu, h_n, n, tau, last_air_temp, D, fluid_speed);
+                        if (i == 10 && j == 40 && m == 10) { printf("Pour la cellule en 10 10 40, var_temp = %.6f\n", new_T_air - air_temp[i].data[idx(m, j, air_temp[i].cols)]); }
+
+                        air_temp[i].data[idx(m, j, air_temp[i].cols)] = new_T_air;
+                        if (new_T_air < min_temp) { min_temp = new_T_air; }
+                        if (new_T_air > max_temp) { max_temp = new_T_air; }
+                    }
+                }
+            }
+        }
+        iteration++;
+        // Inscription des données de température de ce tour de simulation dans le fichier
+
+        if (print_to_file) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < air_temp[i].rows; j++) {
+                    for (int k = 0; k < air_temp[i].cols - 1; k++) {
+                        fprintf(f, "%.6f;", air_temp[i].data[idx(j, k, air_temp[i].cols)] - 273.0);
+                    }
+                    fprintf(f, "%.6f\n", air_temp[i].data[idx(j, air_temp[i].cols - 1, air_temp[i].cols)] - 273.0);
+                }
+            }
+        }
+        // Gestion des indices pour faire comme si le fluide se déplaçait de gauche à droite sur la surface
+
+        // Calcul de "l'écart" e 
+        double compteur_e = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < air_temp[i].rows; j++) {
+                for (int k = 0; k < air_temp[i].cols; k++) {
+                    //if (air_temp[i].data[idx(j, k, air_temp[i].cols)] == last_air_temp[i].data[j, k, air_temp[i].cols]) {
+                    //    alerte += 1;
+                    //}
+                    
+                    compteur_e += pow(air_temp[i].data[idx(j, k, air_temp[i].cols)] - last_air_temp[i].data[idx(j, k, air_temp[i].cols)], 2);
+                    //printf("Calc de compteur : %.6f pour val1 = %.6f et val2 = %.6f\n", compteur_e, air_temp[i].data[j, k, air_temp[i].cols], last_air_temp[i].data[j, k, air_temp[i].cols]);
+                }
+            }
+        }
+        e = sqrt(compteur_e / (n * air_temp[0].rows * air_temp[0].cols));
+        //printf("New e = %.50f\n", e);
+        // COPIE POUR AVOIR ITERATION PRECEDENTE
+        
+        
+    }
+
+    printf("L'équilibre a été atteint en %i itérations\n", nb_it_eq);
+
+    
 
     if (print_to_file) {
         // A la toute fin du fichier contenant toute la simulation on ajoute la température min et max
