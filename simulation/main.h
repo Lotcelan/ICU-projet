@@ -282,7 +282,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
                 for (int m = 1; m < air_temp[i].rows - 1; m++) {
                     if (i != 0 && i != n - 1) {
                         double new_T_air = air_temp_calc(i, j, m, lambda, mu, h_n, n, tau, last_air_temp, D, fluid_speed);
-                        if (i == 10 && j == 40 && m == 10) { printf("Pour la cellule en 10 10 40, var_temp = %.6f\n", new_T_air - air_temp[i].data[idx(m, j, air_temp[i].cols)]); }
+                        //if (i == 10 && j == 40 && m == 10) { printf("Pour la cellule en 10 10 40, var_temp = %.6f\n", new_T_air - air_temp[i].data[idx(m, j, air_temp[i].cols)]); }
                         air_temp[i].data[idx(m, j, air_temp[i].cols)] = new_T_air;
 
                         if (new_T_air < min_temp) { min_temp = new_T_air; }
@@ -326,7 +326,14 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     }
 
     printf("100%%\n");
-
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < masses[i].rows; j++) {
+            for (int k = 0; k < masses[i].cols; k++) {
+                variation_enthalpie_totale += masses[i].data[idx(j, k, masses[i].cols)] * c_p * (air_temp[i].data[idx(j, k, air_temp[i].cols)] - first_iteration[i].data[idx(j, k, first_iteration[i].cols)]);
+            }
+        }
+    }    
+    printf("Min_temp = %.6f; Max_temp = %.6f; Var enth = %.6f\n", min_temp-273.0, max_temp-273.0, variation_enthalpie_totale);
 
     
     // EQUILIBRE THERMIQUE (fonction temporaire !)
@@ -350,7 +357,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
                 for (int m = 1; m < air_temp[i].rows - 1; m++) {
                     if (i != 0 && i != n - 1) {
                         double new_T_air = air_temp_calc(i, j, m, lambda, mu, h_n, n, tau, last_air_temp, D, fluid_speed);
-                        if (i == 10 && j == 40 && m == 10) { printf("Pour la cellule en 10 10 40, var_temp = %.6f\n", new_T_air - air_temp[i].data[idx(m, j, air_temp[i].cols)]); }
+                        //if (i == 10 && j == 40 && m == 10) { printf("Pour la cellule en 10 10 40, var_temp = %.6f\n", new_T_air - air_temp[i].data[idx(m, j, air_temp[i].cols)]); }
 
                         air_temp[i].data[idx(m, j, air_temp[i].cols)] = new_T_air;
                         if (new_T_air < min_temp) { min_temp = new_T_air; }

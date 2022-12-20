@@ -108,7 +108,7 @@ def main():
     screen_size_y = 1000
 
     FPS = 25
-    nb_frames_per_display = 15
+    nb_frames_per_display = 3
     nb_cols = ceil(nb_sub / 10)
     nb_rows = int(nb_sub / nb_cols)
 

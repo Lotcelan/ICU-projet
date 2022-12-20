@@ -32,10 +32,16 @@ double air_temp_calc(int x, int y, int z, double lambda, double mu, double h_n, 
     temp_z_moins_1 = prev_temp[ x ].data[idx(z-1, y , prev_temp[x].cols)];
     temp_z_plus_1  = prev_temp[ x ].data[idx(z+1, y , prev_temp[x].cols)];
 
-    return prev_temp[x].data[idx(z, y, prev_temp[x].cols)]
-        + D * lambda / fluid_speed * ( (temp_x_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_x_moins_1 ) / (mu * mu)
+    //return prev_temp[x].data[idx(z, y, prev_temp[x].cols)]
+    //    + D * lambda / fluid_speed * ( (temp_x_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_x_moins_1 ) / (mu * mu)
+    //                + (temp_y_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_y_moins_1 ) / (lambda * lambda)
+    //                + (temp_z_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_z_moins_1 ) / (h_n * h_n) );
+    return 
+        tau * (D * ( (temp_x_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_x_moins_1 ) / (mu * mu)
                     + (temp_y_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_y_moins_1 ) / (lambda * lambda)
-                    + (temp_z_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_z_moins_1 ) / (h_n * h_n) );
+                    + (temp_z_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_z_moins_1 ) / (h_n * h_n) )
+        - fluid_speed * (temp_y_plus_1 - prev_temp[x].data[idx(z, y, prev_temp[x].cols)]) / lambda)
+        + prev_temp[x].data[idx(z, y, prev_temp[x].cols)];    
 }
 
 #endif
