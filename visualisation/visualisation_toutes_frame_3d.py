@@ -1,4 +1,4 @@
-import pygame
+import pygame, sys
 from numpy import float64 as f64
 import numpy as np
 from math import floor, ceil
@@ -93,13 +93,25 @@ def draw_i_th_matrix(screen, H, L, matrix, start_pos_x, start_pos_y, min_temp, m
 def idx(i,j,size):
     return i*size + j
 
-def main():
+def main(args):
     """
     Objectif : calculer la variation d'enthalpie massique engendrée par la variation de température du fluide
     Paramètres :
         - air_temp_file : fichier qui contient l'ensemble des matrices contenant les températures du fluide à la première à chaque itération
         - masses_last_fist_file : de même avec les masses de chaque subdivision de fluide
     """
+    nb_frames_per_display = 1
+
+    if (a := "-sf" in args) or (b := "--skip-frames" in args):
+        i = args.index("-sf" if a else "--skip-frames")
+        try:
+            value = int(args[i+1])  
+            nb_frames_per_display = value
+        except:
+            print("Erreur, entrez une valeur cohérente")
+    
+    
+    
     air_temp_file = "./results/air_temp_0.tipe"
     (data, rows, cols, nb, nb_sub, min_temp, max_temp) = get_info(air_temp_file)
     mat_gen = matrix_gen(data, nb, nb_sub, rows)
@@ -108,7 +120,6 @@ def main():
     screen_size_y = 1000
 
     FPS = 25
-    nb_frames_per_display = 3
     nb_cols = ceil(nb_sub / 10)
     nb_rows = int(nb_sub / nb_cols)
 
@@ -144,4 +155,5 @@ def main():
     pygame.quit()
 
 if __name__ == "__main__":
-    main()
+    args = sys.argv
+    main(args)

@@ -93,12 +93,12 @@ Une installation classique de C suffit.
 
 ## Tests
 
-- Faire un système de test (calcul d'enthalpie pour plusieurs systèmes ...)
+- [x] Tout fait
 
 ## Simulation
 
-- Trouver `h`
-- Etudier l'impact de la végétation sur les paramètres de la simulation (étant donné que c'est une solution contre les ICU)
-- Trouver les raisons de divergence selon les valeurs de h et D
+- [ ] Etudier l'impact de la végétation sur les paramètres de la simulation (étant donné que c'est une solution contre les ICU)
+- [ ] Trouver les raisons de divergence selon les valeurs de h et D
   - Meilleure méthode d'intégration peut-être ?
   - Ou travailler avec des unités adimensionnées (raisonner en "n fois temps caractéristique")
+  - Le fait que l'update de convection ne se fasse pas sur les cellules d'air directement à côté d'une surface

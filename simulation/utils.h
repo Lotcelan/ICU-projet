@@ -45,9 +45,7 @@ typedef struct idx_couple
 
 int idx(int i, int j, int size) { 
     if (j > size || i > size) { printf("Index error : i=%i; j=%i; size =%i", i, j, size); } // matrice carrée
-    return i*size + j;
-    
-    }
-
+    return i*size + j;    
+}
 
 #endif
