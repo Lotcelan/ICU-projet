@@ -1,5 +1,5 @@
-#ifndef UTILS
-#define UTILS
+#ifndef DEF
+#define DEF
 
 #include <stdlib.h>
 #include "stdio.h"

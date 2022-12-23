@@ -1,7 +1,7 @@
 #ifndef CALC
 #define CALC
 
-#include "utils.h"
+#include "def.h"
 
 double floor_temp_calc(int i, int j, double lambda, double mu, double tau, surface_temp s_t, f_matrix* air_temp, double c_p, double m_i, double fluid_speed) {
     if (j > 0 && (j % air_temp->cols != 0)) {
@@ -22,16 +22,16 @@ double wall_temp_calc(int i, int j, int wall_idx, double lambda, double mu, doub
 
 double air_temp_calc_args(int x, int y, int z, double lambda, double mu, double h_n, int nb_subd, double tau, f_matrix* prev_temp, double D, double fluid_speed, double temp_x_plus_1, double temp_x_moins_1, double temp_y_plus_1, double temp_y_moins_1, double temp_z_plus_1, double temp_z_moins_1) {
 
-    //return prev_temp[x].data[idx(z, y, prev_temp[x].cols)]
-    //    + D * tau * ( (temp_x_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_x_moins_1 ) / (mu * mu)
-    //                + (temp_y_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_y_moins_1 ) / (lambda * lambda)
-    //                + (temp_z_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_z_moins_1 ) / (h_n * h_n) );
-    return 
-        tau * (D * ( (temp_x_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_x_moins_1 ) / (mu * mu)
+    return prev_temp[x].data[idx(z, y, prev_temp[x].cols)]
+        + D * tau * ( (temp_x_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_x_moins_1 ) / (mu * mu)
                     + (temp_y_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_y_moins_1 ) / (lambda * lambda)
-                    + (temp_z_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_z_moins_1 ) / (h_n * h_n) )
-        - fluid_speed / 3.6  * (temp_y_plus_1 - prev_temp[x].data[idx(z, y, prev_temp[x].cols)]) / lambda)
-        + prev_temp[x].data[idx(z, y, prev_temp[x].cols)];   
+                    + (temp_z_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_z_moins_1 ) / (h_n * h_n) );
+    //return 
+    //    tau * (D * ( (temp_x_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_x_moins_1 ) / (mu * mu)
+    //                + (temp_y_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_y_moins_1 ) / (lambda * lambda)
+    //                + (temp_z_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_z_moins_1 ) / (h_n * h_n) )
+    //    - fluid_speed / 3.6  * (temp_y_plus_1 - prev_temp[x].data[idx(z, y, prev_temp[x].cols)]) / lambda)
+    //    + prev_temp[x].data[idx(z, y, prev_temp[x].cols)];   
 }
 
 double air_temp_calc(int x, int y, int z, double lambda, double mu, double h_n, int nb_subd, double tau, f_matrix* prev_temp, double D, double fluid_speed) {

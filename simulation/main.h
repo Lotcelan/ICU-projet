@@ -2,17 +2,9 @@
 #define MAIN
 
 #include "calc.h"
+#include "simulation_utils.h"
+#include "simulation_phys.h"
 
-
-char* file_id_ext(char* name, int id) {
-    /*
-        Génère un nom de fichier de la forme : {name}{id}.tipe
-    */
-    char nb[8];
-    sprintf(nb,"%d",id);
-    char* res = (char*)malloc(sizeof(char) * (strlen(name) + 1 + 9 + 6));
-    return strcat(strcat(strcpy(res,name),nb),".tipe");
-}
 
 /* Possibilité pour calculer h
 double calculer_h(double delta_t, double L) {
@@ -50,7 +42,6 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     const double tau = lambda / (fluid_speed / 3.6); // temps (en s) de simulation à tour de simulation
 
     printf("Lambda = %.6f; mu = %.6f; h_n = %.6f; tau = %.6f\n", lambda, mu, h_n, tau);
-    
 
     if (floor_temp == NULL || air_temp == NULL || masses == NULL || left_wall_temp == NULL || right_wall_temp == NULL) {
         exit(EXIT_FAILURE);
@@ -58,105 +49,15 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     // TEMPERATURES DU SOL ET DES MURS
 
-    floor_temp->cols = n;
-    floor_temp->rows = n;
-    left_wall_temp->cols = n;
-    left_wall_temp->rows = n;
-    right_wall_temp->cols = n;
-    right_wall_temp->rows = n;
-
-    surface_temp* floor = (surface_temp*)malloc(n * n * sizeof(surface_temp));
-    surface_temp* l_wall = (surface_temp*)malloc(n * n * sizeof(surface_temp));
-    surface_temp* r_wall = (surface_temp*)malloc(n * n * sizeof(surface_temp));
-
-    if (floor == NULL || l_wall == NULL || r_wall == NULL) {
-        exit(EXIT_FAILURE);
-    }
-    
-    floor_temp->data = floor;
-    left_wall_temp->data = l_wall;
-    right_wall_temp->data = r_wall;
-
-    FILE* l_wall_temp_file = fopen(config_l_wall_temp, "r");
-    FILE* floor_temp_file = fopen(config_floor_temp, "r");
-    FILE* r_wall_temp_file = fopen(config_r_wall_temp, "r");
-
-    FILE* l_wall_h_file = fopen(config_l_wall_h, "r");
-    FILE* floor_h_file = fopen(config_floor_h, "r");
-    FILE* r_wall_h_file = fopen(config_r_wall_h, "r");
-
-    float temp;
-    float h;
-    for (int j = 0; j < floor_temp->rows; j++) {        // On suppose que murs et sol ont la même dimension
-        for (int k = 0; k < floor_temp->cols; k++) {
-            surface new_surf = { .width = mu, .length = lambda};
-
-            fscanf(floor_temp_file, "%f", &temp);
-            floor_temp->data[idx(j, k, floor_temp->cols)].temp = temp;
-            fscanf(floor_h_file, "%f", &h);
-            floor_temp->data[idx(j, k, floor_temp->cols)].h = h; // 1/h_i + e/lambda (1/hi dépend e = épaisseur surface en (m) et lambda = conductivité thermique (ici celle du béton)); cf https://fr.wikipedia.org/wiki/Coefficient_de_convection_thermique
-            floor_temp->data[idx(j, k, floor_temp->cols)].surf = new_surf;
-
-            fscanf(l_wall_temp_file, "%f", &temp);
-            left_wall_temp->data[idx(j, k, left_wall_temp->cols)].temp = temp;
-            fscanf(l_wall_h_file, "%f", &h);
-            left_wall_temp->data[idx(j, k, left_wall_temp->cols)].h = h;
-            left_wall_temp->data[idx(j, k, left_wall_temp->cols)].surf = new_surf;
-
-            fscanf(r_wall_temp_file, "%f", &temp);
-            right_wall_temp->data[idx(j, k, right_wall_temp->cols)].temp = temp;
-            fscanf(r_wall_h_file, "%f", &h);
-            right_wall_temp->data[idx(j, k, right_wall_temp->cols)].h = h;
-            right_wall_temp->data[idx(j, k, right_wall_temp->cols)].surf = new_surf;
-        } 
-    }
-
-    fclose(l_wall_temp_file);
-    fclose(floor_temp_file);
-    fclose(r_wall_temp_file);
-    fclose(l_wall_h_file);
-    fclose(floor_h_file);
-    fclose(r_wall_h_file);
+    init_surface_temp(floor_temp, n, n, config_floor_temp, config_floor_h, mu, lambda);
+    init_surface_temp(left_wall_temp, n, n, config_l_wall_temp, config_l_wall_h, mu, lambda);
+    init_surface_temp(right_wall_temp, n, n, config_r_wall_temp, config_r_wall_h, mu, lambda);
 
     // TEMPERATURES DE L'AIR
 
-    for (int i = 0; i < n; i++) {
-        air_temp[i].cols = n;
-        air_temp[i].rows = n;
-
-        double* temp = (double*)malloc(n * n * sizeof(double));
-        if (temp == NULL) {
-            exit(EXIT_FAILURE);
-        }
-        air_temp[i].data = temp;
-
-        for (int j = 0; j < air_temp[i].rows; j++) {
-            for (int k = 0; k < air_temp[i].cols; k++) {
-                air_temp[i].data[idx(j, k, air_temp[i].cols)] = T_e;
-            }
-        }
-    }
-
-    // PREMIERE ITERATION
-
-    for (int i = 0; i < n; i++) {
-        first_iteration[i].cols = n;
-        first_iteration[i].rows = n;
-
-        double* temp = (double*)malloc(n * n * sizeof(double));
-        if (temp == NULL) {
-            exit(EXIT_FAILURE);
-        }
-        first_iteration[i].data = temp;
-
-        for (int j = 0; j < air_temp[i].rows; j++) {
-            for (int k = 0; k < air_temp[i].cols; k++) {
-                first_iteration[i].data[idx(j, k, air_temp[i].cols)] = air_temp[i].data[idx(j, k, air_temp[i].cols)];
-            }
-        }
-    }
-
-    // MASSES
+    init_f_mat_val(air_temp, n, n, n, T_e);
+    
+    // MASSES (pour l'instant pas avec init_f_mat_val car POTENTIELLEMENT pas les cellules toutes les mêmes)
 
     for (int i = 0; i < n; i++) {
         masses[i].cols = n;
@@ -176,43 +77,30 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         }
     }
 
+    // PREMIERE ITERATION
 
-    FILE* f = fopen(save_air_temp_filename, "w");
+    init_f_mat_val(first_iteration, n, n, n, T_e);
+    
+    // Les fichiers de sauvegarde
 
+    FILE* save_air_temp = fopen(save_air_temp_filename, "w");
     FILE* masses_last_first = fopen(masses_last_first_file, "w");
     FILE* air_temp_last_first = fopen(air_temp_last_first_file, "w");
 
-
-
     if (print_to_file) {
 
-        fprintf(f,"%i*%i*%i\n", n, n, n); // nb mat, rows, cols
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < air_temp[i].rows; j++) {
-                for (int k = 0; k < air_temp[i].cols - 1; k++) {
-                    fprintf(f, "%.6f;", air_temp[i].data[idx(j, k, air_temp[i].cols)] - 273.0);
-                }
-                fprintf(f, "%.6f\n", air_temp[i].data[idx(j, air_temp[i].cols - 1, air_temp[i].cols)] - 273.0);
-
-            }
-        }
+        fprintf(save_air_temp,"%i*%i*%i\n", n, n, n); // nb mat, rows, cols
+        write_f_mat(save_air_temp, air_temp, (-273.0), n);
 
         fprintf(masses_last_first,"%i*%i*%i\n", n, n, n); // nb_sub / rows / cols
         fprintf(air_temp_last_first,"%i*%i*%i*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%i\n", n, n, n, T_e, fluid_speed, fluid_volume, L, l, c_p, D, id); // nb_sub / rows / cols / vitesse / volume / Longueur de la surface / largeur / c_p / D / l'id de la simulation| pour l'instant seul ce fichier contiendra toutes les informations de la simulation pour éviter la redodnance
 
-    // Inscription du premier tour de simulation dans les fichiers
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < masses[i].rows; j++) {
-                for (int k = 0; k < masses[i].cols - 1; k++) {
-                    fprintf(masses_last_first, "%.6f;", masses[i].data[idx(j, k, masses[i].cols)]);
-                    fprintf(air_temp_last_first, "%.6f;", air_temp[i].data[idx(j, k, air_temp[i].cols)]);
-                }
-                fprintf(masses_last_first, "%.6f\n", masses[i].data[idx(j, masses[i].cols - 1, masses[i].cols)]);
-                fprintf(air_temp_last_first, "%.6f\n", air_temp[i].data[idx(j, air_temp[i].cols - 1, air_temp[i].cols)]);
-            }
-        }
+        // Inscription du premier tour de simulation dans les fichiers
+        write_f_mat(masses_last_first, masses, 0, n);
+        write_f_mat(air_temp_last_first, air_temp, 0, n);
+        
     }
+
     // LA SIMULATION
 
     idx_couple idx_c;
@@ -226,27 +114,20 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     // Pour avoir l'itération précédente
 
-    f_matrix* last_air_temp = (f_matrix*)malloc(n*sizeof(f_matrix));
-    for (int i = 0; i < n; i++) {
-        last_air_temp[i].cols = air_temp->cols;
-        last_air_temp[i].rows = air_temp->rows;
-        double* temp = (double*)malloc(n * n * sizeof(double));
-        if (temp == NULL) {
-            exit(EXIT_FAILURE);
-        }
-        last_air_temp[i].data = temp;
-        for (int j = 0; j < last_air_temp[i].rows; j++) {
-            for (int k = 0; k < last_air_temp[i].cols; k++) {
-                last_air_temp[i].data[idx(j, k, last_air_temp[i].cols)] = air_temp[i].data[idx(j, k, last_air_temp[i].cols)];
-            }
-        }
-    }
+    f_matrix* last_air_temp = (f_matrix*)malloc(n * sizeof(f_matrix));
+    init_f_mat_val(last_air_temp, n, air_temp[0].cols, air_temp[0].rows, T_e);
+
+    // Pour le pourcentage 
 
     float iteration = 1;
     float nb_total_iteration = (n - 1) * 2;
     float nb_decoupage = 20;
     printf("\n");
+
     while (idx_c.snd != 0 || (continuer_meme_si_fini && count < nb_iterations_supplementaires)) {
+        
+        // Pourcentage
+
         if ((int)iteration % (100 / (int)nb_decoupage) == 0) {
             printf("\x1b[A\r%.6f%%          \n", iteration * 100 / nb_total_iteration);
         }
@@ -254,86 +135,19 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
             count++;
         }
         
-        for (int i = 0; i < n; i++ ) {
-            int c = 0;
-            for (int j = idx_c.fst; j <= idx_c.snd; j++) {
+        // DEBUT SIMULATION
 
-                // LA CONDUCTION
-                
-                double new_T_floor = floor_temp_calc(i, j, lambda, mu, tau, floor_temp->data[idx(i, n - 1 - idx_c.snd + c, floor_temp->cols)], last_air_temp, c_p, masses[i].data[idx(air_temp[i].rows - 1, j, masses[i].cols)], fluid_speed);
-                air_temp[i].data[idx(air_temp[i].rows - 1, j, air_temp[i].cols)] = new_T_floor;
+        conduction_all_surfaces(n, air_temp, last_air_temp, masses, floor_temp, left_wall_temp, right_wall_temp, &min_temp, &max_temp, idx_c, mu, lambda, tau, fluid_speed, c_p);
+        convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, temp_x_plus_1, temp_x_moins_1, temp_y_plus_1, temp_y_moins_1, temp_z_plus_1, temp_z_moins_1);
 
-                double new_T_l_wall = wall_temp_calc(i, j, 0, lambda, mu, tau, left_wall_temp->data[idx(i, n - 1 - idx_c.snd + c, left_wall_temp->cols)], last_air_temp, c_p, masses[0].data[idx(i, j, masses[0].cols)], fluid_speed);
-                double new_T_r_wall = wall_temp_calc(i, j, n - 1, lambda, mu, tau, right_wall_temp->data[idx(i, n - 1 - idx_c.snd + c, right_wall_temp->cols)], last_air_temp, c_p, masses[n-1].data[idx(i, j, masses[n-1].cols)], fluid_speed);
+        // FIN SIMULATION
 
-                air_temp[0].data[idx(i, j, air_temp[0].cols)] = new_T_l_wall;
-                air_temp[n-1].data[idx(i, j, air_temp[n-1].cols)] = new_T_r_wall;
-
-                if (new_T_floor < min_temp) { min_temp = new_T_floor; }
-                if (new_T_floor > max_temp) { max_temp = new_T_floor; }
-                if (new_T_l_wall < min_temp) { min_temp = new_T_l_wall; }
-                if (new_T_l_wall > max_temp) { max_temp = new_T_l_wall; }
-                if (new_T_r_wall < min_temp) { min_temp = new_T_r_wall; }
-                if (new_T_r_wall > max_temp) { max_temp = new_T_r_wall; }
-
-                c++;
-            }
-
-            // LA CONVECTION
-
-            /*
-            for (int j = 1; j < air_temp[i].cols - 1; j++) {
-                for (int m = 1; m < air_temp[i].rows - 1; m++) {
-                    if (i != 0 && i != n - 1) {
-                        double new_T_air = air_temp_calc(i, j, m, lambda, mu, h_n, n, tau, last_air_temp, D, fluid_speed);
-                        //if (i == 10 && j == 40 && m == 10) { printf("Pour la cellule en 10 10 40, var_temp = %.6f\n", new_T_air - air_temp[i].data[idx(m, j, air_temp[i].cols)]); }
-                        air_temp[i].data[idx(m, j, air_temp[i].cols)] = new_T_air;
-
-                        if (new_T_air < min_temp) { min_temp = new_T_air; }
-                        if (new_T_air > max_temp) { max_temp = new_T_air; }
-                    }
-                }
-                if (i != 0 && i!= n - 1) {
-                    double new_T_floor_air = floor_air_temp_calc(i, j, last_air_temp[i].rows - 1, lambda, mu, h_n, n, tau, last_air_temp, D, fluid_speed);
-                    air_temp[i].data[idx(air_temp[i].rows - 1, j, air_temp[i].cols)] = new_T_floor_air;
-                    if (new_T_floor_air < min_temp) { min_temp = new_T_floor_air; }
-                    if (new_T_floor_air > max_temp) { max_temp = new_T_floor_air; }
-                }
-            }
-            */
-           for (int y = 0; y < last_air_temp[i].cols; y++) {
-                for (int z = 0; z < last_air_temp[i].rows; z++) {
-                        if (i != 0 && i < n - 1 && y > 0 && y < last_air_temp[i].cols - 1 && z > 0 && z < last_air_temp[i].rows - 1) {
-
-                            temp_x_moins_1 = (i != 0 )                        ? last_air_temp[i-1].data[idx( z , y , last_air_temp[i].cols)] : 0;
-                            temp_x_plus_1  = (i != n - 1)                     ? last_air_temp[i+1].data[idx( z , y , last_air_temp[i].cols)] : 0;
-                            temp_y_moins_1 = (y != 0)                         ? last_air_temp[ i ].data[idx( z ,y-1, last_air_temp[i].cols)] : 0;
-                            temp_y_plus_1  = (y != last_air_temp[i].cols - 1) ? last_air_temp[ i ].data[idx( z ,y+1, last_air_temp[i].cols)] : 0;
-                            temp_z_moins_1 = (z != 0)                         ? last_air_temp[ i ].data[idx(z-1, y , last_air_temp[i].cols)] : 0;
-                            temp_z_plus_1  = (z != last_air_temp[i].rows - 1) ? last_air_temp[ i ].data[idx(z+1, y , last_air_temp[i].cols)] : 0;
-                            double new_T_air = air_temp_calc_args(i, y, z, lambda, mu, h_n, n, tau, last_air_temp, D, fluid_speed, temp_x_plus_1, temp_x_moins_1, temp_y_plus_1, temp_y_moins_1, temp_z_plus_1, temp_z_moins_1);
-                            air_temp[i].data[idx(z, y, air_temp[i].cols)] = new_T_air;
-                            if (new_T_air < min_temp) { min_temp = new_T_air; };
-                            if (new_T_air > max_temp) { max_temp = new_T_air; };
-                        }
-                    }
-                }
-           
-
-        }
         iteration++;
+        
         // Inscription des données de température de ce tour de simulation dans le fichier
 
-        if (print_to_file) {
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < air_temp[i].rows; j++) {
-                    for (int k = 0; k < air_temp[i].cols - 1; k++) {
-                        fprintf(f, "%.6f;", air_temp[i].data[idx(j, k, air_temp[i].cols)] - 273.0);
-                    }
-                    fprintf(f, "%.6f\n", air_temp[i].data[idx(j, air_temp[i].cols - 1, air_temp[i].cols)] - 273.0);
-                }
-            }
-        }
+        write_f_mat(save_air_temp, air_temp, (-273.0), n);
+        
         // Gestion des indices pour faire comme si le fluide se déplaçait de gauche à droite sur la surface
 
         idx_c.fst = idx_c.fst - 1;    
@@ -346,16 +160,14 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         
         // COPIE POUR AVOIR ITERATION PRECEDENTE
         
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < last_air_temp[i].rows; j++) {
-                for (int k = 0; k < last_air_temp[i].cols; k++) {
-                    last_air_temp[i].data[idx(j, k, last_air_temp[i].cols)] = air_temp[i].data[idx(j, k, last_air_temp[i].cols)];
-                }
-            }
-        }
+        copy_f_mat(last_air_temp, air_temp, n);
+        
     }
 
     printf("100%%\n");
+
+    // Calcul de la variation d'enthalpie
+
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < masses[i].rows; j++) {
             for (int k = 0; k < masses[i].cols; k++) {
@@ -367,54 +179,20 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     
     // EQUILIBRE THERMIQUE (fonction temporaire !)
-    /*
+    
     double e = 1;
     int nb_it_eq = 0;
     while (e >= 0.001) {
         nb_it_eq++;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < last_air_temp[i].rows; j++) {
-                for (int k = 0; k < last_air_temp[i].cols; k++) {
-                    last_air_temp[i].data[idx(j, k, last_air_temp[i].cols)] = air_temp[i].data[idx(j, k, last_air_temp[i].cols)];
-                }
-            }
-        }
-        //printf("Mise à l'équilibre\n");
-        
-
-            // LA CONVECTION
-        for (int i = 0; i < n; i++) {
-            for (int y = 0; y < last_air_temp[i].cols; y++) {
-                for (int z = 0; z < last_air_temp[i].rows; z++) {
-                    if (i != 0 && i < n - 1 && y > 0 && y < last_air_temp[i].cols - 1 && z > 0 && z < last_air_temp[i].rows - 1) {
-                        temp_x_moins_1 = (i != 0 )                        ? last_air_temp[i-1].data[idx( z , y , last_air_temp[i].cols)] : 0;
-                        temp_x_plus_1  = (i != n - 1)                     ? last_air_temp[i+1].data[idx( z , y , last_air_temp[i].cols)] : 0;
-                        temp_y_moins_1 = (y != 0)                         ? last_air_temp[ i ].data[idx( z ,y-1, last_air_temp[i].cols)] : 0;
-                        temp_y_plus_1  = (y != last_air_temp[i].cols - 1) ? last_air_temp[ i ].data[idx( z ,y+1, last_air_temp[i].cols)] : 0;
-                        temp_z_moins_1 = (z != 0)                         ? last_air_temp[ i ].data[idx(z-1, y , last_air_temp[i].cols)] : 0;
-                        temp_z_plus_1  = (z != last_air_temp[i].rows - 1) ? last_air_temp[ i ].data[idx(z+1, y , last_air_temp[i].cols)] : 0;
-                        double new_T_air = air_temp_calc_args(i, y, z, lambda, mu, h_n, n, tau, last_air_temp, D, fluid_speed, temp_x_plus_1, temp_x_moins_1, temp_y_plus_1, temp_y_moins_1, temp_z_plus_1, temp_z_moins_1);
-                        air_temp[i].data[idx(z, y, air_temp[i].cols)] = new_T_air;
-                        if (new_T_air < min_temp) { min_temp = new_T_air; };
-                        if (new_T_air > max_temp) { max_temp = new_T_air; };
-                    }
-                }
-            }
-        }
+        copy_f_mat(last_air_temp, air_temp, n);
+    
+        // LA CONVECTION
+        convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, temp_x_plus_1, temp_x_moins_1, temp_y_plus_1, temp_y_moins_1, temp_z_plus_1, temp_z_moins_1);
         iteration++;
+        
         // Inscription des données de température de ce tour de simulation dans le fichier
 
-        if (print_to_file) {
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < air_temp[i].rows; j++) {
-                    for (int k = 0; k < air_temp[i].cols - 1; k++) {
-                        fprintf(f, "%.6f;", air_temp[i].data[idx(j, k, air_temp[i].cols)] - 273.0);
-                    }
-                    fprintf(f, "%.6f\n", air_temp[i].data[idx(j, air_temp[i].cols - 1, air_temp[i].cols)] - 273.0);
-                }
-            }
-        }
-        // Gestion des indices pour faire comme si le fluide se déplaçait de gauche à droite sur la surface
+        write_f_mat(save_air_temp, air_temp, (-273.0), n);
 
         // Calcul de "l'écart" e 
         double compteur_e = 0;
@@ -430,40 +208,31 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
                 }
             }
         }
-        e = sqrt(compteur_e / (n * air_temp[0].rows * air_temp[0].cols));
-        //printf("New e = %.50f\n", e);
-        // COPIE POUR AVOIR ITERATION PRECEDENTE
-        
-        
+        e = sqrt(compteur_e / (n * air_temp[0].rows * air_temp[0].cols));    
     }
 
     printf("L'équilibre a été atteint en %i itérations\n", nb_it_eq);
-    */
+    
     
 
     if (print_to_file) {
         // A la toute fin du fichier contenant toute la simulation on ajoute la température min et max
-        fprintf(f,"%.6f;%.6f\n", min_temp-273.0, max_temp-273.0);
-        fclose(f);
-
+        
+        fprintf(save_air_temp,"%.6f;%.6f\n", min_temp-273.0, max_temp-273.0);
+        fclose(save_air_temp);
         
         // Inscription du dernier tour de simulation dans les fichiers dédiés
 
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < masses[i].rows; j++) {
-                for (int k = 0; k < masses[i].cols - 1; k++) {
-                    fprintf(masses_last_first, "%.6f;", masses[i].data[idx(j,k,masses[i].cols)]);
-                    fprintf(air_temp_last_first, "%.6f;", air_temp[i].data[idx(j,k,air_temp[i].cols)]);
-                }
-                fprintf(masses_last_first, "%.6f\n", masses[i].data[idx(j,masses[i].cols-1,masses[i].cols)]);
-                fprintf(air_temp_last_first, "%.6f\n", air_temp[i].data[idx(j,air_temp[i].cols-1,air_temp[i].cols)]);
-            }
-        }
+        write_f_mat(masses_last_first, masses, 0, n);
+        write_f_mat(air_temp_last_first, air_temp, 0, n);
         
     }
 
     fclose(masses_last_first);
     fclose(air_temp_last_first);
+
+
+    // On recalcule après la mise à l'équilibre
 
     variation_enthalpie_totale = 0;
     // Calcul de la variation d'enthalpie
