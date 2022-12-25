@@ -138,7 +138,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         // DEBUT SIMULATION
 
         conduction_all_surfaces(n, air_temp, last_air_temp, masses, floor_temp, left_wall_temp, right_wall_temp, &min_temp, &max_temp, idx_c, mu, lambda, tau, fluid_speed, c_p);
-        convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, temp_x_plus_1, temp_x_moins_1, temp_y_plus_1, temp_y_moins_1, temp_z_plus_1, temp_z_moins_1);
+        copy_f_mat(last_air_temp, air_temp, n);
+        convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1);
 
         // FIN SIMULATION
 
@@ -168,15 +169,12 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     // Calcul de la variation d'enthalpie
 
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < masses[i].rows; j++) {
-            for (int k = 0; k < masses[i].cols; k++) {
-                variation_enthalpie_totale += masses[i].data[idx(j, k, masses[i].cols)] * c_p * (air_temp[i].data[idx(j, k, air_temp[i].cols)] - first_iteration[i].data[idx(j, k, first_iteration[i].cols)]);
-            }
-        }
-    }    
+    variation_enthalpie_totale = calcul_enthalpie(n, masses, air_temp, first_iteration, c_p);
+
     printf("Min_temp = %.6f; Max_temp = %.6f; Var enth = %.6f\n", min_temp-273.0, max_temp-273.0, variation_enthalpie_totale);
 
+
+    /*
     
     // EQUILIBRE THERMIQUE (fonction temporaire !)
     
@@ -187,7 +185,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         copy_f_mat(last_air_temp, air_temp, n);
     
         // LA CONVECTION
-        convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, temp_x_plus_1, temp_x_moins_1, temp_y_plus_1, temp_y_moins_1, temp_z_plus_1, temp_z_moins_1);
+        convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1);
         iteration++;
         
         // Inscription des données de température de ce tour de simulation dans le fichier
@@ -213,7 +211,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     printf("L'équilibre a été atteint en %i itérations\n", nb_it_eq);
     
-    
+    */
 
     if (print_to_file) {
         // A la toute fin du fichier contenant toute la simulation on ajoute la température min et max
@@ -234,15 +232,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     // On recalcule après la mise à l'équilibre
 
-    variation_enthalpie_totale = 0;
-    // Calcul de la variation d'enthalpie
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < masses[i].rows; j++) {
-            for (int k = 0; k < masses[i].cols; k++) {
-                variation_enthalpie_totale += masses[i].data[idx(j, k, masses[i].cols)] * c_p * (air_temp[i].data[idx(j, k, air_temp[i].cols)] - first_iteration[i].data[idx(j, k, first_iteration[i].cols)]);
-            }
-        }
-    }    
+    variation_enthalpie_totale = calcul_enthalpie(n, masses, air_temp, first_iteration, c_p);
+    
 
     printf("Min_temp = %.6f; Max_temp = %.6f; Var enth = %.6f\n", min_temp-273.0, max_temp-273.0, variation_enthalpie_totale);
 

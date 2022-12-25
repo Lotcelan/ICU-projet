@@ -30,19 +30,19 @@ void conduction_all_surfaces(int n, f_matrix* air_temp, f_matrix* last_air_temp,
     }
 }
 
-void convection(int n, f_matrix* air_temp, f_matrix* last_air_temp, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double D, double fluid_speed, double temp_x_plus_1, double temp_x_moins_1, double temp_y_plus_1, double temp_y_moins_1, double temp_z_plus_1, double temp_z_moins_1) {
+void convection(int n, f_matrix* air_temp, f_matrix* last_air_temp, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double D, double fluid_speed, double* temp_x_plus_1, double* temp_x_moins_1, double* temp_y_plus_1, double* temp_y_moins_1, double* temp_z_plus_1, double* temp_z_moins_1) {
     for (int x = 0; x < n; x++ ) {
         for (int y = 0; y < last_air_temp[x].cols; y++) {
             for (int z = 0; z < last_air_temp[x].rows; z++) {
                 //if (x != 0 && x < n - 1 && y > 0 && y < last_air_temp[x].cols - 1 && z > 0 && z < last_air_temp[x].rows - 1) {
 
-                    temp_x_moins_1 = (x != 0 )                        ? last_air_temp[x-1].data[idx( z , y , last_air_temp[x].cols)] : 0;
-                    temp_x_plus_1  = (x != n - 1)                     ? last_air_temp[x+1].data[idx( z , y , last_air_temp[x].cols)] : 0;
-                    temp_y_moins_1 = (y != 0)                         ? last_air_temp[ x ].data[idx( z ,y-1, last_air_temp[x].cols)] : 0;
-                    temp_y_plus_1  = (y != last_air_temp[x].cols - 1) ? last_air_temp[ x ].data[idx( z ,y+1, last_air_temp[x].cols)] : 0;
-                    temp_z_moins_1 = (z != 0)                         ? last_air_temp[ x ].data[idx(z-1, y , last_air_temp[x].cols)] : 0;
-                    temp_z_plus_1  = (z != last_air_temp[x].rows - 1) ? last_air_temp[ x ].data[idx(z+1, y , last_air_temp[x].cols)] : 0;
-                    double new_T_air = air_temp_calc_args(x, y, z, lambda, mu, h_n, n, tau, last_air_temp, D, fluid_speed, temp_x_plus_1, temp_x_moins_1, temp_y_plus_1, temp_y_moins_1, temp_z_plus_1, temp_z_moins_1);
+                    *temp_x_moins_1 = (x != 0 )                        ? last_air_temp[x-1].data[idx( z , y , last_air_temp[x].cols)] : last_air_temp[ x ].data[idx( z , y , last_air_temp[x].cols)];
+                    *temp_x_plus_1  = (x != n - 1)                     ? last_air_temp[x+1].data[idx( z , y , last_air_temp[x].cols)] : last_air_temp[ x ].data[idx( z , y , last_air_temp[x].cols)];
+                    *temp_y_moins_1 = (y != 0)                         ? last_air_temp[ x ].data[idx( z ,y-1, last_air_temp[x].cols)] : last_air_temp[ x ].data[idx( z , y , last_air_temp[x].cols)];
+                    *temp_y_plus_1  = (y != last_air_temp[x].cols - 1) ? last_air_temp[ x ].data[idx( z ,y+1, last_air_temp[x].cols)] : last_air_temp[ x ].data[idx( z , y , last_air_temp[x].cols)];
+                    *temp_z_moins_1 = (z != 0)                         ? last_air_temp[ x ].data[idx(z-1, y , last_air_temp[x].cols)] : last_air_temp[ x ].data[idx( z , y , last_air_temp[x].cols)];
+                    *temp_z_plus_1  = (z != last_air_temp[x].rows - 1) ? last_air_temp[ x ].data[idx(z+1, y , last_air_temp[x].cols)] : last_air_temp[ x ].data[idx( z , y , last_air_temp[x].cols)];
+                    double new_T_air = air_temp_calc_args(x, y, z, lambda, mu, h_n, n, tau, last_air_temp, D, fluid_speed, *temp_x_plus_1, *temp_x_moins_1, *temp_y_plus_1, *temp_y_moins_1, *temp_z_plus_1, *temp_z_moins_1);
                     air_temp[x].data[idx(z, y, air_temp[x].cols)] = new_T_air;
                     if (new_T_air < *min_temp) { *min_temp = new_T_air; };
                     if (new_T_air > *max_temp) { *max_temp = new_T_air; };
@@ -50,6 +50,21 @@ void convection(int n, f_matrix* air_temp, f_matrix* last_air_temp, double* min_
             }
         }
     }
+}
+
+
+double calcul_enthalpie(int n, f_matrix* masses, f_matrix* air_temp, f_matrix* first_iteration, double c_p) {
+    double variation_enthalpie_totale = 0;
+    for (int x = 0; x < n; x++) {
+        for (int y = 0; y < masses[x].cols; y++) {
+            for (int z = 0; z < masses[x].rows; z++) {
+                //if (x != 0 && x < n - 1 && y > 0 && y < last_air_temp[x].cols - 1 && z > 0 && z < last_air_temp[x].rows - 1) {
+                    variation_enthalpie_totale += masses[x].data[idx(y, z, masses[x].cols)] * c_p * (air_temp[x].data[idx(y, z, air_temp[x].cols)] - first_iteration[x].data[idx(y, z, first_iteration[x].cols)]);
+                //}
+            }
+        }
+    }
+    return variation_enthalpie_totale;
 }
 
 #endif
