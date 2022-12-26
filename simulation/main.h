@@ -174,10 +174,11 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     printf("Min_temp = %.6f; Max_temp = %.6f; Var enth = %.6f\n", min_temp-273.0, max_temp-273.0, variation_enthalpie_totale);
 
 
-    /*
+    
     
     // EQUILIBRE THERMIQUE (fonction temporaire !)
     
+    /*
     double e = 1;
     int nb_it_eq = 0;
     while (e >= 0.001) {
@@ -196,13 +197,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         double compteur_e = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < air_temp[i].rows; j++) {
-                for (int k = 0; k < air_temp[i].cols; k++) {
-                    //if (air_temp[i].data[idx(j, k, air_temp[i].cols)] == last_air_temp[i].data[j, k, air_temp[i].cols]) {
-                    //    alerte += 1;
-                    //}
-                    
+                for (int k = 0; k < air_temp[i].cols; k++) {                
                     compteur_e += pow(air_temp[i].data[idx(j, k, air_temp[i].cols)] - last_air_temp[i].data[idx(j, k, air_temp[i].cols)], 2);
-                    //printf("Calc de compteur : %.6f pour val1 = %.6f et val2 = %.6f\n", compteur_e, air_temp[i].data[j, k, air_temp[i].cols], last_air_temp[i].data[j, k, air_temp[i].cols]);
                 }
             }
         }
@@ -210,7 +206,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     }
 
     printf("L'équilibre a été atteint en %i itérations\n", nb_it_eq);
-    
+
     */
 
     if (print_to_file) {

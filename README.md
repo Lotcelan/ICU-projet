@@ -66,6 +66,13 @@ https://user-images.githubusercontent.com/40437798/205454906-06ba46fa-2c69-4118-
 
 Avec comme paramètres : `T_e` = 288 K; `Vitesse_air` = 5 km/h; `Volume_air` = 7.5 m³; `Largeur` et `Longueur` = 5 m; `Subdivisions` = 50; `D` = 0.00025; `h` est le même partout : 3 W/K/m²
 
+Et en 3D
+
+https://user-images.githubusercontent.com/40437798/209585508-20b6fe9c-b539-486e-ad69-cfb8fd10b977.mp4
+
+
+Avec comme paramètres : `T_e` = 288 K; `Vitesse_air` = 0.1 km/h; `Volume_air` = 10000 m³; `Largeur` = 10 m et `Longueur` = 100 m; `Subdivisions` = 50; `D` = 0.00001478969060; `h` est le même partout : 3 W/K/m² (sauf pour là où il n'y a pas de bâtiments sur le mur gauche)
+
 ## Exploitation
 
 ### Variation d'enthalpie
@@ -83,7 +90,7 @@ Avec comme paramètres : `T_e` = 288 K; `Vitesse_air` = 5 km/h; `Volume_air` = 7
 
 ### Python
 
-Pour utiliser la plupart des scripts, il faut `matplotlib`, et `pygame` pour faire la visualisation 3D. Pour `parse_tests.py` il faut `pandas`.
+Pour utiliser la plupart des scripts, il faut `matplotlib`, et `pygame` pour faire la visualisation 3D matrices/matrices et `raylib` pour la visualisation sous forme de "bloc". Pour `parse_tests.py` il faut `pandas`.
 
 ### C
 
