@@ -137,6 +137,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         
         // DEBUT SIMULATION
 
+        therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p);
+        copy_f_mat(last_air_temp, air_temp, n);
         conduction_all_surfaces(n, air_temp, last_air_temp, masses, floor_temp, left_wall_temp, right_wall_temp, &min_temp, &max_temp, idx_c, mu, lambda, tau, fluid_speed, c_p);
         copy_f_mat(last_air_temp, air_temp, n);
         convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1);

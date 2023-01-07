@@ -9,7 +9,12 @@ void conduction_all_surfaces(int n, f_matrix* air_temp, f_matrix* last_air_temp,
         int c = 0; // pour la l'effet 'gauche à droite'
         for (int y = idx_c.fst; y <= idx_c.snd; y++) {
             
+            // Sans Rayonnement solaire
+            //double new_T_floor = floor_temp_calc(x, y, lambda, mu, tau, floor_temp->data[idx(x, n - 1 - idx_c.snd + c, floor_temp->cols)], last_air_temp, c_p, masses[x].data[idx(masses[x].rows - 1, y, masses[x].cols)], fluid_speed);
+
+            // Avec Rayonnement solaire
             double new_T_floor = floor_temp_calc(x, y, lambda, mu, tau, floor_temp->data[idx(x, n - 1 - idx_c.snd + c, floor_temp->cols)], last_air_temp, c_p, masses[x].data[idx(masses[x].rows - 1, y, masses[x].cols)], fluid_speed);
+
             air_temp[x].data[idx(air_temp[x].rows - 1, y, air_temp[x].cols)] = new_T_floor;
 
             double new_T_l_wall = wall_temp_calc(x, y, 0, lambda, mu, tau, left_wall_temp->data[idx(x, n - 1 - idx_c.snd + c, left_wall_temp->cols)], last_air_temp, c_p, masses[0].data[idx(x, y, masses[0].cols)], fluid_speed);
@@ -28,6 +33,22 @@ void conduction_all_surfaces(int n, f_matrix* air_temp, f_matrix* last_air_temp,
             c++;
         }
     }
+}
+
+void therm_ray(int n, f_matrix* air_temp, f_matrix* last_air_temp, f_matrix* masses, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double fluid_speed, double c_p) {
+    double coeff_absorption_air = 0.0007;
+    double radiation_absorbee = 1230 * exp( -1 / (3.8 * sin(3.14 / 180 * (10 + 1.6)))) * coeff_absorption_air * h_n;
+    for (int x = 0; x < n; x++ ) {
+        for (int y = 0; y < last_air_temp[x].cols; y++) {
+            for (int z = 0; z < last_air_temp[x].rows; z++) {
+                double new_T_air = air_temp_calc_ray(x, y, z, tau, c_p, masses[x].data[idx(z, y, masses[x].cols)], last_air_temp[x].data[idx(z, y, last_air_temp[x].cols)], radiation_absorbee);
+                air_temp[x].data[idx(z, y, air_temp[x].cols)] = new_T_air;
+                if (new_T_air < *min_temp) { *min_temp = new_T_air; };
+                if (new_T_air > *max_temp) { *max_temp = new_T_air; };
+            }
+        }
+    }
+
 }
 
 void convection(int n, f_matrix* air_temp, f_matrix* last_air_temp, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double D, double fluid_speed, double* temp_x_plus_1, double* temp_x_moins_1, double* temp_y_plus_1, double* temp_y_moins_1, double* temp_z_plus_1, double* temp_z_moins_1) {
@@ -66,5 +87,7 @@ double calcul_enthalpie(int n, f_matrix* masses, f_matrix* air_temp, f_matrix* f
     }
     return variation_enthalpie_totale;
 }
+
+
 
 #endif
