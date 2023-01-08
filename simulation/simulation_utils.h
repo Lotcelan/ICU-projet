@@ -83,4 +83,12 @@ void copy_f_mat(f_matrix* dest, f_matrix* src, int n) {
     }
 }
 
+bool is_colliding(int x, int y, int z, bounding_box bb) {
+    // x, y, z = -1 => ignorer la collision selon cette coordoonnée
+    return  ( ( (x <= bb.start_x + bb.width  && x >= bb.start_x) || x == -1) &&
+              ( (y <= bb.start_y + bb.length && y >= bb.start_y) || y == -1) &&
+              ( (z <= bb.start_z + bb.height && z >= bb.start_z) || z == -1)
+            );
+}
+
 #endif

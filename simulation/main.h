@@ -38,10 +38,16 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     double variation_enthalpie_totale = 0;
     double temp_x_plus_1, temp_x_moins_1, temp_y_plus_1, temp_y_moins_1, temp_z_plus_1, temp_z_moins_1; // Représentent à l'itération précédente les températures décalées de + ou - 1 selon x, y ou z
 
-
     const double tau = lambda / (fluid_speed / 3.6); // temps (en s) de simulation à tour de simulation
 
     printf("Lambda = %.6f; mu = %.6f; h_n = %.6f; tau = %.6f\n", lambda, mu, h_n, tau);
+
+    bounding_box tree1_bb = { .start_x = 30, .start_y = 25, .start_z = 20, .width = 10, .length = 10, .height = 10 };
+    tree tree1 = { .bb = tree1_bb };
+    tree* list = (tree*)malloc(1 * sizeof(tree));
+    list[0] = tree1;
+    forest fr = { .tree_list = list, .size = 1 };
+
 
     if (floor_temp == NULL || air_temp == NULL || masses == NULL || left_wall_temp == NULL || right_wall_temp == NULL) {
         exit(EXIT_FAILURE);
@@ -137,11 +143,11 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         
         // DEBUT SIMULATION
 
-        therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p);
+        therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr);
         copy_f_mat(last_air_temp, air_temp, n);
         conduction_all_surfaces(n, air_temp, last_air_temp, masses, floor_temp, left_wall_temp, right_wall_temp, &min_temp, &max_temp, idx_c, mu, lambda, tau, fluid_speed, c_p);
         copy_f_mat(last_air_temp, air_temp, n);
-        convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1);
+        convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1, floor_temp);
 
         // FIN SIMULATION
 

@@ -11,8 +11,9 @@ double floor_temp_calc(int i, int j, double lambda, double mu, double tau, surfa
     }   
 }
 
-double air_temp_calc_ray(int x, int y, int z, double tau, double c_p, double m_i, double prev_temp, double radiation_absorbee) {
-    return prev_temp + radiation_absorbee * tau / c_p / m_i;
+double air_temp_calc_ray(int x, int y, int z, double lambda, double tau, double c_p, double m_i, double prev_temp, double temp_y_moins_1, double radiation_absorbee, double fluid_speed) {
+    return ( fluid_speed / 3.6 / lambda * temp_y_moins_1 + prev_temp / tau + radiation_absorbee / m_i / c_p ) /  ( fluid_speed / 3.6 / lambda + 1 / tau );
+    // return prev_temp + radiation_absorbee * tau / c_p / m_i;
 }
 
 //double floor_temp_calc_ray(int i, int j, double lambda, double mu, double tau, surface_temp s_t, f_matrix* air_temp, double c_p, double m_i, double fluid_speed) {

@@ -104,6 +104,6 @@ Une installation classique de C suffit.
 
 ## Simulation
 
-- [ ] Etudier l'impact de la végétation sur les paramètres de la simulation (étant donné que c'est une solution contre les ICU)
-- [x] Ajouter le rayonnement ? Oui :(
-- [ ] Conditions limites de convection : faire comme pacman pour gauche et droite, le sol cf tunnel de fréjus : on peut prendre la temp du sol, pour le haut ?
+- [x] Etudier l'impact de la végétation sur les paramètres de la simulation (étant donné que c'est une solution contre les ICU)
+- [ ] Ajouter le rayonnement réfléchi par parois
+- [x] Conditions limites de convection : faire comme pacman pour gauche et droite, le sol cf tunnel de fréjus : on peut prendre la temp du sol, pour le haut ?

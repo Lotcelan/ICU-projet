@@ -37,6 +37,30 @@ typedef struct s_t_matrix
     surface_temp* data; //1 dim surface_temp array
 } s_t_matrix;
 
+typedef struct bounding_box
+{
+    // Donne le point de départ du pavé, puis sa largeur selon x, longueur selon y et hauteur selon z
+    int start_x;
+    int start_y;
+    int start_z;
+    int width;
+    int length;
+    int height;
+} bounding_box;
+
+typedef struct tree
+{
+    bounding_box bb;
+} tree;
+
+typedef struct forest
+{
+    tree* tree_list;
+    int size;
+} forest;
+
+
+
 typedef struct idx_couple
 {
     int fst;

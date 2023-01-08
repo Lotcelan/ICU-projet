@@ -35,23 +35,32 @@ void conduction_all_surfaces(int n, f_matrix* air_temp, f_matrix* last_air_temp,
     }
 }
 
-void therm_ray(int n, f_matrix* air_temp, f_matrix* last_air_temp, f_matrix* masses, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double fluid_speed, double c_p) {
+void therm_ray(int n, f_matrix* air_temp, f_matrix* last_air_temp, f_matrix* masses, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double fluid_speed, double c_p, forest fr) {
     double coeff_absorption_air = 0.0007;
     double radiation_absorbee = 1230 * exp( -1 / (3.8 * sin(3.14 / 180 * (10 + 1.6)))) * coeff_absorption_air * h_n;
     for (int x = 0; x < n; x++ ) {
         for (int y = 0; y < last_air_temp[x].cols; y++) {
             for (int z = 0; z < last_air_temp[x].rows; z++) {
-                double new_T_air = air_temp_calc_ray(x, y, z, tau, c_p, masses[x].data[idx(z, y, masses[x].cols)], last_air_temp[x].data[idx(z, y, last_air_temp[x].cols)], radiation_absorbee);
-                air_temp[x].data[idx(z, y, air_temp[x].cols)] = new_T_air;
-                if (new_T_air < *min_temp) { *min_temp = new_T_air; };
-                if (new_T_air > *max_temp) { *max_temp = new_T_air; };
+                double temp_y_moins_1 = (y != 0) ? last_air_temp[ x ].data[idx( z ,y-1, last_air_temp[x].cols)] : last_air_temp[ x ].data[idx( z , y , last_air_temp[x].cols)];
+                bool is_under_tree = false;
+                for (int t = 0; t < fr.size; t++) {
+                    if ( (is_colliding(x, y, -1, fr.tree_list[t].bb) && (last_air_temp[x].rows - 1 - z) <= fr.tree_list[t].bb.start_z + fr.tree_list[t].bb.height)) { // potentiellement raycasting ici plus tard
+                        is_under_tree = true;
+                    }
+                }
+                if (!is_under_tree) {
+                    double new_T_air = air_temp_calc_ray(x, y, z, lambda, tau, c_p, masses[x].data[idx(z, y, masses[x].cols)], last_air_temp[x].data[idx(z, y, last_air_temp[x].cols)], temp_y_moins_1, radiation_absorbee, fluid_speed);
+                    air_temp[x].data[idx(z, y, air_temp[x].cols)] = new_T_air;
+                    if (new_T_air < *min_temp) { *min_temp = new_T_air; };
+                    if (new_T_air > *max_temp) { *max_temp = new_T_air; };
+                }
             }
         }
     }
 
 }
 
-void convection(int n, f_matrix* air_temp, f_matrix* last_air_temp, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double D, double fluid_speed, double* temp_x_plus_1, double* temp_x_moins_1, double* temp_y_plus_1, double* temp_y_moins_1, double* temp_z_plus_1, double* temp_z_moins_1) {
+void convection(int n, f_matrix* air_temp, f_matrix* last_air_temp, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double D, double fluid_speed, double* temp_x_plus_1, double* temp_x_moins_1, double* temp_y_plus_1, double* temp_y_moins_1, double* temp_z_plus_1, double* temp_z_moins_1, s_t_matrix* floor_temp) {
     for (int x = 0; x < n; x++ ) {
         for (int y = 0; y < last_air_temp[x].cols; y++) {
             for (int z = 0; z < last_air_temp[x].rows; z++) {
@@ -62,7 +71,7 @@ void convection(int n, f_matrix* air_temp, f_matrix* last_air_temp, double* min_
                     *temp_y_moins_1 = (y != 0)                         ? last_air_temp[ x ].data[idx( z ,y-1, last_air_temp[x].cols)] : last_air_temp[ x ].data[idx( z , y , last_air_temp[x].cols)];
                     *temp_y_plus_1  = (y != last_air_temp[x].cols - 1) ? last_air_temp[ x ].data[idx( z ,y+1, last_air_temp[x].cols)] : last_air_temp[ x ].data[idx( z , y , last_air_temp[x].cols)];
                     *temp_z_moins_1 = (z != 0)                         ? last_air_temp[ x ].data[idx(z-1, y , last_air_temp[x].cols)] : last_air_temp[ x ].data[idx( z , y , last_air_temp[x].cols)];
-                    *temp_z_plus_1  = (z != last_air_temp[x].rows - 1) ? last_air_temp[ x ].data[idx(z+1, y , last_air_temp[x].cols)] : last_air_temp[ x ].data[idx( z , y , last_air_temp[x].cols)];
+                    *temp_z_plus_1  = (z != last_air_temp[x].rows - 1) ? last_air_temp[ x ].data[idx(z+1, y , last_air_temp[x].cols)] : last_air_temp[ x ].data[idx( z , y , last_air_temp[x].cols)]; //floor_temp->data[idx(x, y, floor_temp->cols)].temp;
                     double new_T_air = air_temp_calc_args(x, y, z, lambda, mu, h_n, n, tau, last_air_temp, D, fluid_speed, *temp_x_plus_1, *temp_x_moins_1, *temp_y_plus_1, *temp_y_moins_1, *temp_z_plus_1, *temp_z_moins_1);
                     air_temp[x].data[idx(z, y, air_temp[x].cols)] = new_T_air;
                     if (new_T_air < *min_temp) { *min_temp = new_T_air; };
