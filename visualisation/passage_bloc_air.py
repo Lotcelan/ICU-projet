@@ -92,6 +92,8 @@ def main():
     camera = pr.Camera3D([nb_sub + 50, nb_sub + 80, nb_sub + 50], [0.0, 25.0, 0.0], [0.0, 1.0, 0.0], 45.0, 0)
     pr.set_camera_mode(camera, pr.CAMERA_FREE) #CAMERA_ORBITAL
 
+    forest = [ [ (30, 25, 20), (10, 10, 10) ] ]
+
     # https://github.com/raysan5/raylib/blob/master/examples/core/core_split_screen.c
     #vp1 = [0                                     , 0                                     , window_length // 2, window_height // 2] # En haut à gauche
     #vp2 = [window_length // 2                    , 0                                     , window_length     , window_height // 2] # En haut à droite
@@ -103,6 +105,8 @@ def main():
 
     fluid_start_X = -cols - cols // 2
     fluid_start_Z = -rows // 2
+
+    iteration = 0
 
     while not pr.window_should_close():
         
@@ -116,7 +120,7 @@ def main():
         pr.begin_mode_3d(camera)
         pr.draw_grid(nb_sub, 1)
         
-        # Progression de l'air selon l'axe x
+        # Progression de l'air selon l'axe x, y en hauteur, z du mur droit au mur gauche
         left_wall_start_X = -cols // 2
         left_wall_start_Z = -rows // 2 - 1
 
@@ -148,14 +152,21 @@ def main():
             for i in range(rows):
                 for j in range(cols):
                     new_col = get_col_by_temp(mat[rows-1-i][j], min_temp, max_temp)
-                    pr.draw_cube((fluid_start_X + j, i, fluid_start_Z + offset), 1, 1, 1, pr.Color(int(new_col[0]), int(new_col[1]), int(new_col[2]), 255))
+                    pr.draw_cube((fluid_start_X + j, i, fluid_start_Z + offset), 1, 1, 1, pr.Color(int(new_col[0]), int(new_col[1]), int(new_col[2]), 200))
             offset += 1
         if fluid_start_X < cols // 2:
             fluid_start_X += 1
 
+        forest_start_X = - cols // 2
+        forest_start_Z = - rows // 2
+        # DRAW TREE
+        for tree in forest:
+            pr.draw_cube((forest_start_X + tree[0][1], tree[0][2], forest_start_Z + tree[0][0]), tree[1][1], tree[1][2], tree[1][0], pr.Color(25,255,25, 75))
         pr.end_mode_3d()
 
         pr.end_drawing()
+        pr.set_window_title(f"{iteration}/{nb}")
+        iteration += 1
     #    pr.begin_mode_3d(camera)
     #    pr.draw_grid(20, 1.0)
     #    pr.end_mode_3d()

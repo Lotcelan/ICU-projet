@@ -101,9 +101,10 @@ Une installation classique de C suffit.
 ## Tests
 
 - [x] Tout fait
-
+r
 ## Simulation
 
-- [x] Etudier l'impact de la végétation sur les paramètres de la simulation (étant donné que c'est une solution contre les ICU)
-- [ ] Ajouter le rayonnement réfléchi par parois
-- [x] Conditions limites de convection : faire comme pacman pour gauche et droite, le sol cf tunnel de fréjus : on peut prendre la temp du sol, pour le haut ?
+- [ ] Ajouter le rayonnement réfléchi par parois (albedo)
+- [ ] Rayonnement infrarouge (corps noir) des murs
+- [x] Jsuis con mdr, faire en sorte que l'arbre ne se déplace pas avec le fluide
+- [x] Ajout de la végétation + visualisation (pas très automatisé mais on s'en sort)

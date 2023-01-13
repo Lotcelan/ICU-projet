@@ -131,23 +131,28 @@ def main(args):
     running = True
     frame = 0
 
-    
+    should_pause = False
 
     while (running and frame < nb):
         pygame.display.set_caption(f"{frame=}/{nb}")
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    should_pause = not should_pause
 
         i = 0
-        for _ in range(nb_frames_per_display):
-            mat_bloc = next(mat_gen)
-        for mat in mat_bloc:
-            draw_i_th_matrix(screen, H, L, mat, (i%nb_cols)*L*cols, (i//nb_cols)*H*rows,min_temp, max_temp, rows, cols)
-            i+=1
-        frame += nb_frames_per_display
+        if not (should_pause):
+            for _ in range(nb_frames_per_display):
+                mat_bloc = next(mat_gen)
+            for mat in mat_bloc:
+                draw_i_th_matrix(screen, H, L, mat, (i%nb_cols)*L*cols, (i//nb_cols)*H*rows,min_temp, max_temp, rows, cols)
+                i+=1
+            frame += nb_frames_per_display
         
-        print(frame)
+            print(frame)
 
         pygame.display.flip()
         fpsClock.tick(FPS)
