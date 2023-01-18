@@ -42,12 +42,28 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     printf("Lambda = %.6f; mu = %.6f; h_n = %.6f; tau = %.6f\n", lambda, mu, h_n, tau);
 
-    bounding_box tree1_bb = { .start_x = 30, .start_y = 25, .start_z = 20, .width = 10, .length = 10, .height = 10 };
-    tree tree1 = { .bb = tree1_bb };
-    tree* list = (tree*)malloc(1 * sizeof(tree));
-    list[0] = tree1;
-    forest fr = { .tree_list = list, .size = 1 };
+    // Paramètres qui ne sont pas en paramètre de l'exécutable (plus le temps de faire ça)
 
+    // x : du mur gauche vers le mur droit; y : du début vers la fin; z : de bas en haut POUR LES ARBRES
+
+    bounding_box tree1_bb = { .start_x = 10, .start_y = 20, .start_z = 20, .width = 10, .length = 10, .height = 10 };
+    tree tree1 = { .bb = tree1_bb };
+
+    bounding_box tree2_bb = { .start_x = 10, .start_y = 30, .start_z = 20, .width = 15, .length = 15, .height = 15 };
+    tree tree2 = { .bb = tree2_bb };
+
+    bounding_box tree3_bb = { .start_x = 30, .start_y = 20, .start_z = 0, .width = 10, .length = 30, .height = 5 };
+    tree tree3 = { .bb = tree3_bb };
+
+
+    tree* list = (tree*)malloc(3 * sizeof(tree));
+    list[0] = tree1;
+    list[1] = tree2;
+    list[2] = tree3;
+    forest fr = { .tree_list = list, .size = 3 };
+
+    double coeff_absorption_thermique_air = 0.0007;
+    double albedo_beton = 0.2;
 
     if (floor_temp == NULL || air_temp == NULL || masses == NULL || left_wall_temp == NULL || right_wall_temp == NULL) {
         exit(EXIT_FAILURE);
@@ -143,7 +159,11 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         
         // DEBUT SIMULATION
 
-        therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, idx_c);
+        therm_stefan(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, idx_c, coeff_absorption_thermique_air, floor_temp, left_wall_temp, right_wall_temp);
+        copy_f_mat(last_air_temp, air_temp, n);
+        therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, idx_c, coeff_absorption_thermique_air);
+        copy_f_mat(last_air_temp, air_temp, n);
+        therm_ray_refl(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, idx_c, coeff_absorption_thermique_air, albedo_beton);
         copy_f_mat(last_air_temp, air_temp, n);
         conduction_all_surfaces(n, air_temp, last_air_temp, masses, floor_temp, left_wall_temp, right_wall_temp, &min_temp, &max_temp, idx_c, mu, lambda, tau, fluid_speed, c_p);
         copy_f_mat(last_air_temp, air_temp, n);
@@ -184,38 +204,39 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     
     
-    // EQUILIBRE THERMIQUE (fonction temporaire !)
-    
-    /*
-    double e = 1;
-    int nb_it_eq = 0;
-    while (e >= 0.001) {
-        nb_it_eq++;
-        copy_f_mat(last_air_temp, air_temp, n);
-    
-        // LA CONVECTION
-        convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1);
-        iteration++;
+    // EQUILIBRE THERMIQUE (fonction temporaire !) (plus trop en fait)
+    bool do_therm_eq = false;
+    if (do_therm_eq) {
+        double e = 1;
+        int nb_it_eq = 0;
+        while (e >= 0.001) {
+            nb_it_eq++;
         
-        // Inscription des données de température de ce tour de simulation dans le fichier
+            copy_f_mat(last_air_temp, air_temp, n);
+            therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, idx_c, coeff_absorption_thermique_air);
+            copy_f_mat(last_air_temp, air_temp, n);
+            convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1, floor_temp);
+            iteration++;
+            
+            // Inscription des données de température de ce tour de simulation dans le fichier
 
-        write_f_mat(save_air_temp, air_temp, (-273.0), n);
+            write_f_mat(save_air_temp, air_temp, (-273.0), n);
 
-        // Calcul de "l'écart" e 
-        double compteur_e = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < air_temp[i].rows; j++) {
-                for (int k = 0; k < air_temp[i].cols; k++) {                
-                    compteur_e += pow(air_temp[i].data[idx(j, k, air_temp[i].cols)] - last_air_temp[i].data[idx(j, k, air_temp[i].cols)], 2);
+            // Calcul de "l'écart" e 
+            double compteur_e = 0;
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < air_temp[i].rows; j++) {
+                    for (int k = 0; k < air_temp[i].cols; k++) {                
+                        compteur_e += pow(air_temp[i].data[idx(j, k, air_temp[i].cols)] - last_air_temp[i].data[idx(j, k, air_temp[i].cols)], 2);
+                    }
                 }
             }
+            e = sqrt(compteur_e / (n * air_temp[0].rows * air_temp[0].cols));    
         }
-        e = sqrt(compteur_e / (n * air_temp[0].rows * air_temp[0].cols));    
+
+        printf("L'équilibre a été atteint en %i itérations\n", nb_it_eq);
     }
-
-    printf("L'équilibre a été atteint en %i itérations\n", nb_it_eq);
-
-    */
+    
 
     if (print_to_file) {
         // A la toute fin du fichier contenant toute la simulation on ajoute la température min et max

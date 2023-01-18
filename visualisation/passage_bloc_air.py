@@ -1,4 +1,5 @@
 import pyray as pr
+from math import *
 """
 Différences entre raylib pyhton/C :
 the function names are in snake_case.
@@ -92,7 +93,7 @@ def main():
     camera = pr.Camera3D([nb_sub + 50, nb_sub + 80, nb_sub + 50], [0.0, 25.0, 0.0], [0.0, 1.0, 0.0], 45.0, 0)
     pr.set_camera_mode(camera, pr.CAMERA_FREE) #CAMERA_ORBITAL
 
-    forest = [ [ (30, 25, 20), (10, 10, 10) ] ]
+    forest = [ [ (10, 20, 20), (10, 10, 10) ], [ (10, 30, 20), (15, 15, 15) ], [ (30, 20, 0), (10, 30, 5) ] ]
 
     # https://github.com/raysan5/raylib/blob/master/examples/core/core_split_screen.c
     #vp1 = [0                                     , 0                                     , window_length // 2, window_height // 2] # En haut à gauche
@@ -107,6 +108,8 @@ def main():
     fluid_start_Z = -rows // 2
 
     iteration = 0
+
+    fluid_opacity = 1.0 # 0 to 1
 
     while not pr.window_should_close():
         
@@ -148,12 +151,27 @@ def main():
 
         # DRAW FLUID
         offset = 0
+        mat_x = 0
         for mat in mat_bloc:
-            for i in range(rows):
-                for j in range(cols):
-                    new_col = get_col_by_temp(mat[rows-1-i][j], min_temp, max_temp)
-                    pr.draw_cube((fluid_start_X + j, i, fluid_start_Z + offset), 1, 1, 1, pr.Color(int(new_col[0]), int(new_col[1]), int(new_col[2]), 200))
-            offset += 1
+            if (mat_x == 0 or mat_x == len(mat_bloc) - 1):
+                for i in range(rows):
+                    for j in range(cols):
+                        new_col = get_col_by_temp(mat[rows-1-i][j], min_temp, max_temp)
+                        pr.draw_cube((fluid_start_X + j, i, fluid_start_Z + offset), 1, 1, 1, pr.Color(int(new_col[0]), int(new_col[1]), int(new_col[2]), ceil(255*fluid_opacity)))
+                offset += 1
+            else:
+                for i in range(rows):
+                    new_col = get_col_by_temp(mat[rows-1-i][0], min_temp, max_temp)
+                    pr.draw_cube((fluid_start_X + 0, i, fluid_start_Z + offset), 1, 1, 1, pr.Color(int(new_col[0]), int(new_col[1]), int(new_col[2]), ceil(255*fluid_opacity)))
+                    new_col = get_col_by_temp(mat[rows-1-i][cols-1], min_temp, max_temp)
+                    pr.draw_cube((fluid_start_X + cols - 1, i, fluid_start_Z + offset), 1, 1, 1, pr.Color(int(new_col[0]), int(new_col[1]), int(new_col[2]), ceil(255*fluid_opacity)))
+                for j in range(1, cols-1):
+                    new_col = get_col_by_temp(mat[rows-1-0][j], min_temp, max_temp)
+                    pr.draw_cube((fluid_start_X + j, 0, fluid_start_Z + offset), 1, 1, 1, pr.Color(int(new_col[0]), int(new_col[1]), int(new_col[2]), ceil(255*fluid_opacity)))
+                    new_col = get_col_by_temp(mat[0][cols-1], min_temp, max_temp)
+                    pr.draw_cube((fluid_start_X + cols - 1, rows-1, fluid_start_Z + offset), 1, 1, 1, pr.Color(int(new_col[0]), int(new_col[1]), int(new_col[2]), ceil(255*fluid_opacity)))
+    
+                
         if fluid_start_X < cols // 2:
             fluid_start_X += 1
 

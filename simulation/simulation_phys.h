@@ -35,9 +35,37 @@ void conduction_all_surfaces(int n, f_matrix* air_temp, f_matrix* last_air_temp,
     }
 }
 
-void therm_ray(int n, f_matrix* air_temp, f_matrix* last_air_temp, f_matrix* masses, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double fluid_speed, double c_p, forest fr, idx_couple idx_c) {
-    double coeff_absorption_air = 0.0007;
-    double radiation_absorbee = 1230 * exp( -1 / (3.8 * sin(3.14 / 180 * (10 + 1.6)))) * coeff_absorption_air * h_n;
+void therm_ray_refl(int n, f_matrix* air_temp, f_matrix* last_air_temp, f_matrix* masses, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double fluid_speed, double c_p, forest fr, idx_couple idx_c, double coeff_absorption_thermique_air, double albedo) {
+    double radiation_absorbee = albedo * 1230 * exp( -1 / (3.8 * sin(3.14 / 180 * (10 + 1.6)))) * coeff_absorption_thermique_air * h_n;
+    int absolute_y = (idx_c.fst > 0) ? -last_air_temp[0].cols + idx_c.snd - idx_c.fst : last_air_temp[0].cols - idx_c.snd + idx_c.fst;
+    for (int x = 0; x < n; x++ ) {
+        int c = 0; // pour la l'effet 'gauche à droite'
+        for (int y = idx_c.fst; y <= idx_c.snd; y++) {
+            for (int z = 0; z < last_air_temp[x].rows; z++) {
+                double temp_y_moins_1 = (y != 0) ? last_air_temp[ x ].data[idx( z ,y-1, last_air_temp[x].cols)] : last_air_temp[ x ].data[idx( z , y , last_air_temp[x].cols)];
+                bool is_under_tree = false;
+                for (int t = 0; t < fr.size; t++) {
+                    if ( (is_colliding(x, absolute_y + y, -1, true, true, false, fr.tree_list[t].bb) && z >= - (fr.tree_list[t].bb.start_z + fr.tree_list[t].bb.height) + last_air_temp[x].rows - 1)) { // potentiellement raycasting ici plus tard
+                        //printf("Under tree : %i, %i, %i et absoulete_y + y = %i, idx_fst > 0 : %i\n", x, y, z, absolute_y + y, (idx_c.fst > 0) ? 1 : (-1));
+                        is_under_tree = true;
+                    }
+                }
+                if (!is_under_tree) {
+                    double new_T_air = air_temp_calc_ray(x, y, z, lambda, tau, c_p, masses[x].data[idx(z, y, masses[x].cols)], last_air_temp[x].data[idx(z, y, last_air_temp[x].cols)], temp_y_moins_1, radiation_absorbee, fluid_speed);
+                    air_temp[x].data[idx(z, y, air_temp[x].cols)] = new_T_air;
+                    if (new_T_air < *min_temp) { *min_temp = new_T_air; };
+                    if (new_T_air > *max_temp) { *max_temp = new_T_air; };
+                }
+
+                c++;
+            }
+        }
+    }
+
+}
+
+void therm_ray(int n, f_matrix* air_temp, f_matrix* last_air_temp, f_matrix* masses, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double fluid_speed, double c_p, forest fr, idx_couple idx_c, double coeff_absorption_thermique_air) {
+    double radiation_absorbee = 1230 * exp( -1 / (3.8 * sin(3.14 / 180 * (10 + 1.6)))) * coeff_absorption_thermique_air * h_n;
     int absolute_y = (idx_c.fst > 0) ? -last_air_temp[0].cols + idx_c.snd - idx_c.fst : last_air_temp[0].cols - idx_c.snd + idx_c.fst;
     for (int x = 0; x < n; x++ ) {
         for (int y = 0; y < last_air_temp[x].cols; y++) {
@@ -59,8 +87,39 @@ void therm_ray(int n, f_matrix* air_temp, f_matrix* last_air_temp, f_matrix* mas
             }
         }
     }
-
 }
+
+void therm_stefan(int n, f_matrix* air_temp, f_matrix* last_air_temp, f_matrix* masses, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double fluid_speed, double c_p, forest fr, idx_couple idx_c, double coeff_absorption_thermique_air, s_t_matrix* floor_temp, s_t_matrix* left_wall_temp, s_t_matrix* right_wall_temp) {
+    int absolute_y = (idx_c.fst > 0) ? -last_air_temp[0].cols + idx_c.snd - idx_c.fst : last_air_temp[0].cols - idx_c.snd + idx_c.fst;
+    for (int x = 0; x < n; x++ ) {
+        for (int y = 0; y < last_air_temp[x].cols; y++) {
+            for (int z = 0; z < last_air_temp[x].rows; z++) {
+                double temp_y_moins_1 = (y != 0) ? last_air_temp[ x ].data[idx( z ,y-1, last_air_temp[x].cols)] : last_air_temp[ x ].data[idx( z , y , last_air_temp[x].cols)];
+                bool colliding_from_left = false; // faux si peut recevoir flux du mur gauche, vrai sinon
+                bool colliding_from_right = false;
+                bool is_under_tree = false;
+                for (int t = 0; t < fr.size; t++) {
+                    if ( (is_colliding(x, absolute_y + y, -1, true, true, false, fr.tree_list[t].bb) && z >= - (fr.tree_list[t].bb.start_z + fr.tree_list[t].bb.height) + last_air_temp[x].rows - 1)) { // potentiellement raycasting ici plus tard
+                        //printf("Under tree : %i, %i, %i et absoulete_y + y = %i, idx_fst > 0 : %i\n", x, y, z, absolute_y + y, (idx_c.fst > 0) ? 1 : (-1));
+                        is_under_tree = true;
+                    }
+                    if ( (is_colliding(-1, absolute_y + y, z, false, true, true, fr.tree_list[t].bb) && x >= (fr.tree_list[t].bb.start_x))) {
+                        colliding_from_left = true;
+                    }
+                    if ( (is_colliding(-1, absolute_y + y, z, false, true, true, fr.tree_list[t].bb) && n - x <= (fr.tree_list[t].bb.start_x + fr.tree_list[t].bb.width))) {
+                        colliding_from_right = true;
+                    }
+                }
+                double new_T_air = air_temp_calc_stefan(x, y, z, lambda, tau, c_p, masses[x].data[idx(z, y, masses[x].cols)], last_air_temp[x].data[idx(z, y, last_air_temp[x].cols)], temp_y_moins_1, fluid_speed, floor_temp, left_wall_temp, right_wall_temp, is_under_tree, colliding_from_left, colliding_from_right);
+                air_temp[x].data[idx(z, y, air_temp[x].cols)] = new_T_air;
+                if (new_T_air < *min_temp) { *min_temp = new_T_air; };
+                if (new_T_air > *max_temp) { *max_temp = new_T_air; };
+
+            }
+        }
+    }
+}
+    
 
 void convection(int n, f_matrix* air_temp, f_matrix* last_air_temp, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double D, double fluid_speed, double* temp_x_plus_1, double* temp_x_moins_1, double* temp_y_plus_1, double* temp_y_moins_1, double* temp_z_plus_1, double* temp_z_moins_1, s_t_matrix* floor_temp) {
     for (int x = 0; x < n; x++ ) {
