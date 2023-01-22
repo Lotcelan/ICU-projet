@@ -3,16 +3,16 @@
 
 #include "def.h"
 
-double floor_temp_calc(int i, int j, double lambda, double mu, double tau, surface_temp s_t, f_matrix* air_temp, double c_p, double m_i, double fluid_speed) {
-    if (j > 0 && (j % air_temp->cols != 0)) {
-        return (fluid_speed / 3.6 * air_temp[i].data[idx(air_temp[i].rows - 1, j - 1, air_temp[i].cols)] / lambda + air_temp[i].data[idx(air_temp[i].rows - 1, j, air_temp[i].cols)] / tau + (s_t.h / c_p) / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (fluid_speed / 3.6 / lambda + 1 / tau + (s_t.h / c_p) * (s_t.surf.length * s_t.surf.width) / m_i);
+double floor_temp_calc(int y, int x, double lambda, double mu, double tau, surface_temp s_t, cell_matrix* air_temp, double c_p, double m_i, double fluid_speed) {
+    if (x > 0 && (x % air_temp->cols != 0)) {
+        return (fluid_speed / 3.6 * get_cell(air_temp, x-1, y, air_temp[y].rows - 1).value / lambda + get_cell(air_temp, x, y, air_temp[y].rows - 1).value / tau + (s_t.h / c_p) / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (fluid_speed / 3.6 / lambda + 1 / tau + (s_t.h / c_p) * (s_t.surf.length * s_t.surf.width) / m_i);
     } else {
-        return (fluid_speed / 3.6 * air_temp[i].data[idx(air_temp[i].rows - 1, j, air_temp[i].cols)] / lambda + air_temp[i].data[idx(air_temp[i].rows - 1, j, air_temp[i].cols)] / tau + (s_t.h / c_p) / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (fluid_speed / 3.6 / lambda + 1 / tau + (s_t.h / c_p) * (s_t.surf.length * s_t.surf.width) / m_i);
+        return (fluid_speed / 3.6 * get_cell(air_temp,   x, y, air_temp[y].rows - 1).value / lambda + get_cell(air_temp, x, y, air_temp[y].rows - 1).value / tau + (s_t.h / c_p) / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (fluid_speed / 3.6 / lambda + 1 / tau + (s_t.h / c_p) * (s_t.surf.length * s_t.surf.width) / m_i);
     }   
 }
 
-double air_temp_calc_ray(int x, int y, int z, double lambda, double tau, double c_p, double m_i, double prev_temp, double temp_y_moins_1, double radiation_absorbee, double fluid_speed) {
-    return ( fluid_speed / 3.6 / lambda * temp_y_moins_1 + prev_temp / tau + radiation_absorbee / m_i / c_p ) /  ( fluid_speed / 3.6 / lambda + 1 / tau );
+double air_temp_calc_ray(int x, int y, int z, double lambda, double tau, double c_p, double m_i, double prev_temp, double temp_x_moins_1, double radiation_absorbee, double fluid_speed) {
+    return ( fluid_speed / 3.6 / lambda * temp_x_moins_1 + prev_temp / tau + radiation_absorbee / m_i / c_p ) /  ( fluid_speed / 3.6 / lambda + 1 / tau );
     // return prev_temp + radiation_absorbee * tau / c_p / m_i;
 }
 
@@ -54,20 +54,20 @@ double air_temp_calc_wall_stefan(int x, int y, int z, double lambda, double tau,
 //    }   
 //}
 
-double wall_temp_calc(int i, int j, int wall_idx, double lambda, double mu, double tau, surface_temp s_t, f_matrix* air_temp, double c_p, double m_i, double fluid_speed) {
-    if (j > 0 && (j % air_temp->cols != 0)) {
-        return (fluid_speed / 3.6 * air_temp[wall_idx].data[idx(i, j - 1, air_temp[wall_idx].cols)] / lambda + air_temp[wall_idx].data[idx(i, j, air_temp[wall_idx].cols)] / tau + (s_t.h / c_p) / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (fluid_speed / 3.6 / lambda + 1 / tau + (s_t.h / c_p) * (s_t.surf.length * s_t.surf.width) / m_i);
+double wall_temp_calc(int y, int x, int wall_idx, double lambda, double mu, double tau, surface_temp s_t, cell_matrix* air_temp, double c_p, double m_i, double fluid_speed) {
+    if (x > 0 && (x % air_temp->cols != 0)) {
+        return (fluid_speed / 3.6 * get_cell(air_temp, x-1, wall_idx, air_temp[wall_idx].rows - 1).value / lambda + get_cell(air_temp, x, wall_idx, air_temp[wall_idx].rows - 1).value / tau + (s_t.h / c_p) / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (fluid_speed / 3.6 / lambda + 1 / tau + (s_t.h / c_p) * (s_t.surf.length * s_t.surf.width) / m_i);
     } else {
-        return (fluid_speed / 3.6 * air_temp[wall_idx].data[idx(i, j, air_temp[wall_idx].cols)] / lambda + air_temp[wall_idx].data[idx(i, j, air_temp[wall_idx].cols)] / tau + (s_t.h / c_p) / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (fluid_speed / 3.6 / lambda + 1 / tau + (s_t.h / c_p) * (s_t.surf.length * s_t.surf.width) / m_i);
-    }
+        return (fluid_speed / 3.6 * get_cell(air_temp,   x, wall_idx, air_temp[wall_idx].rows - 1).value / lambda + get_cell(air_temp, x, wall_idx, air_temp[wall_idx].rows - 1).value / tau + (s_t.h / c_p) / m_i * (s_t.surf.length * s_t.surf.width) * s_t.temp) / (fluid_speed / 3.6 / lambda + 1 / tau + (s_t.h / c_p) * (s_t.surf.length * s_t.surf.width) / m_i);
+    }   
 }
 
-double air_temp_calc_args(int x, int y, int z, double lambda, double mu, double h_n, int nb_subd, double tau, f_matrix* prev_temp, double D, double fluid_speed, double temp_x_plus_1, double temp_x_moins_1, double temp_y_plus_1, double temp_y_moins_1, double temp_z_plus_1, double temp_z_moins_1) {
-
-    return prev_temp[x].data[idx(z, y, prev_temp[x].cols)]
-        + D * tau * ( (temp_x_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_x_moins_1 ) / (mu * mu)
-                    + (temp_y_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_y_moins_1 ) / (lambda * lambda)
-                    + (temp_z_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_z_moins_1 ) / (h_n * h_n) );
+double air_temp_calc_args(int x, int y, int z, double lambda, double mu, double h_n, int nb_subd, double tau, cell_matrix* prev_temp, double D, double fluid_speed, double temp_x_plus_1, double temp_x_moins_1, double temp_y_plus_1, double temp_y_moins_1, double temp_z_plus_1, double temp_z_moins_1) {
+    double prev_xyz_temp = get_cell(prev_temp, x, y ,z).value;
+    return prev_xyz_temp
+        + D * tau * ( (temp_x_plus_1 - 2 * prev_xyz_temp + temp_x_moins_1 ) / (mu * mu)
+                    + (temp_y_plus_1 - 2 * prev_xyz_temp + temp_y_moins_1 ) / (lambda * lambda)
+                    + (temp_z_plus_1 - 2 * prev_xyz_temp + temp_z_moins_1 ) / (h_n * h_n) );
     //return 
     //    tau * (D * ( (temp_x_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_x_moins_1 ) / (mu * mu)
     //                + (temp_y_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_y_moins_1 ) / (lambda * lambda)
@@ -76,6 +76,7 @@ double air_temp_calc_args(int x, int y, int z, double lambda, double mu, double 
     //    + prev_temp[x].data[idx(z, y, prev_temp[x].cols)];   
 }
 
+/*
 double air_temp_calc(int x, int y, int z, double lambda, double mu, double h_n, int nb_subd, double tau, f_matrix* prev_temp, double D, double fluid_speed) {
 
     double temp_x_plus_1, temp_x_moins_1, temp_y_plus_1, temp_y_moins_1, temp_z_plus_1, temp_z_moins_1; // Représentent à l'itération précédente les températures décalées de + ou - 1 selon x, y ou z
@@ -103,5 +104,5 @@ double air_temp_calc(int x, int y, int z, double lambda, double mu, double h_n, 
                     + (temp_y_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_y_moins_1 ) / (lambda * lambda)
                     + (temp_z_plus_1 - 2 * prev_temp[x].data[idx(z, y, prev_temp[x].cols)] + temp_z_moins_1 ) / (h_n * h_n) );
 }
-
+*/
 #endif

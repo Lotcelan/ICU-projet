@@ -21,10 +21,10 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         Effectue la simulation (arguments détaills dans main.c)
     */
 
-    f_matrix* air_temp = (f_matrix*)malloc(n * sizeof(f_matrix)); // Contiendra en i_e case la matrice de températures de la i_e subdivision selon la largeur
-    f_matrix* first_iteration = (f_matrix*)malloc(n * sizeof(f_matrix)); // Pour la variation d'enthalpie
+    cell_matrix* air_temp = (cell_matrix*)malloc(n * sizeof(cell_matrix)); // Contiendra en i_e case la matrice de températures de la i_e subdivision selon la largeur
+    cell_matrix* first_iteration = (cell_matrix*)malloc(n * sizeof(cell_matrix)); // Pour la variation d'enthalpie
     
-    f_matrix* masses = (f_matrix*)malloc(n * sizeof(f_matrix)); // Contiendra en i_e case la matrice de masses de la i_e subdivision selon la largeur
+    cell_matrix* masses = (cell_matrix*)malloc(n * sizeof(cell_matrix)); // Contiendra en i_e case la matrice de masses de la i_e subdivision selon la largeur
 
     s_t_matrix* floor_temp = (s_t_matrix*)malloc(sizeof(s_t_matrix)); // Matrice contenant les températures du sol
     s_t_matrix* left_wall_temp = (s_t_matrix*)malloc(sizeof(s_t_matrix)); // Matrice contenant les températures du mur gauche
@@ -44,23 +44,22 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     // Paramètres qui ne sont pas en paramètre de l'exécutable (plus le temps de faire ça)
 
-    // x : du mur gauche vers le mur droit; y : du début vers la fin; z : de bas en haut POUR LES ARBRES
-
+    // x : du début vers la fin; y : du mur gauche; z : de bas en haut
+    // a refaire
     bounding_box tree1_bb = { .start_x = 10, .start_y = 20, .start_z = 20, .width = 10, .length = 10, .height = 10 };
     tree tree1 = { .bb = tree1_bb };
 
-    bounding_box tree2_bb = { .start_x = 10, .start_y = 30, .start_z = 20, .width = 15, .length = 15, .height = 15 };
-    tree tree2 = { .bb = tree2_bb };
+    //bounding_box tree2_bb = { .start_x = 10, .start_y = 30, .start_z = 20, .width = 15, .length = 15, .height = 15 };
+    //tree tree2 = { .bb = tree2_bb };
+//
+    //bounding_box tree3_bb = { .start_x = 30, .start_y = 20, .start_z = 0, .width = 10, .length = 30, .height = 5 };
+    //tree tree3 = { .bb = tree3_bb };
 
-    bounding_box tree3_bb = { .start_x = 30, .start_y = 20, .start_z = 0, .width = 10, .length = 30, .height = 5 };
-    tree tree3 = { .bb = tree3_bb };
-
-
-    tree* list = (tree*)malloc(3 * sizeof(tree));
+    tree* list = (tree*)malloc(1 * sizeof(tree));
     list[0] = tree1;
-    list[1] = tree2;
-    list[2] = tree3;
-    forest fr = { .tree_list = list, .size = 3 };
+    //list[1] = tree2;
+    //list[2] = tree3;
+    forest fr = { .tree_list = list, .size = 1 };
 
     double coeff_absorption_thermique_air = 0.0007;
     double albedo_beton = 0.2;
@@ -77,31 +76,34 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     // TEMPERATURES DE L'AIR
 
-    init_f_mat_val(air_temp, n, n, n, T_e);
+    init_cell_mat_val(air_temp, n, n, n, T_e);
     
     // MASSES (pour l'instant pas avec init_f_mat_val car POTENTIELLEMENT pas les cellules toutes les mêmes)
 
-    for (int i = 0; i < n; i++) {
-        masses[i].cols = n;
-        masses[i].rows = n;
+    for (int y = 0; y < n; y++) {
+        masses[y].cols = n;
+        masses[y].rows = n;
 
-        double* temp = (double*)malloc(n * n * sizeof(double));
-        if (temp == NULL) {
+        cell* masses_vals = (cell*)malloc(masses[y].cols * masses[y].rows * sizeof(cell));
+        if (masses_vals== NULL) {
             exit(EXIT_FAILURE);
         }
-        masses[i].data = temp;
+        masses[y].data = masses_vals;
 
-        for (int j = 0; j < masses[i].rows; j++) {
-            for (int k = 0; k < masses[i].cols; k++) {
+        for (int z = 0; z < masses[y].rows; z++) {
+            for (int x = 0; x < masses[y].cols; x++) {
                 // Formule qui provient de l'équation des gaz parfaits
-                masses[i].data[idx(j, k, masses[i].cols)] = 101325.0 * floor_temp->data[idx(j,k,floor_temp->cols)].surf.length * floor_temp->data[idx(j,k,floor_temp->cols)].surf.width * h_n * 0.0029 / (8.314 * air_temp[i].data[idx(i,j,air_temp[i].cols)]);
+                cell new_cell = { .value = 101325.0 * get_surf(floor_temp, z, x).surf.length * get_surf(floor_temp, z, x).surf.width * h_n * 0.0029 / (8.314 * get_cell(air_temp, x, y, z).value),
+                                  .local_x = x, .local_y = y, .local_z = z, .global_x = x, .global_y = y, .global_z = z
+                                }; 
+                masses[y].data[idx(z, x, masses[y].cols)] = new_cell;
             }
         }
     }
 
     // PREMIERE ITERATION
 
-    init_f_mat_val(first_iteration, n, n, n, T_e);
+    init_cell_mat_val(first_iteration, n, n, n, T_e);
     
     // Les fichiers de sauvegarde
 
@@ -112,14 +114,14 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     if (print_to_file) {
 
         fprintf(save_air_temp,"%i*%i*%i\n", n, n, n); // nb mat, rows, cols
-        write_f_mat(save_air_temp, air_temp, (-273.0), n);
+        write_cell_mat(save_air_temp, air_temp, (-273.0), n);
 
         fprintf(masses_last_first,"%i*%i*%i\n", n, n, n); // nb_sub / rows / cols
         fprintf(air_temp_last_first,"%i*%i*%i*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%.6f*%i\n", n, n, n, T_e, fluid_speed, fluid_volume, L, l, c_p, D, id); // nb_sub / rows / cols / vitesse / volume / Longueur de la surface / largeur / c_p / D / l'id de la simulation| pour l'instant seul ce fichier contiendra toutes les informations de la simulation pour éviter la redodnance
 
         // Inscription du premier tour de simulation dans les fichiers
-        write_f_mat(masses_last_first, masses, 0, n);
-        write_f_mat(air_temp_last_first, air_temp, 0, n);
+        write_cell_mat(masses_last_first, masses, 0, n);
+        write_cell_mat(air_temp_last_first, air_temp, 0, n);
         
     }
 
@@ -136,8 +138,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     // Pour avoir l'itération précédente
 
-    f_matrix* last_air_temp = (f_matrix*)malloc(n * sizeof(f_matrix));
-    init_f_mat_val(last_air_temp, n, air_temp[0].cols, air_temp[0].rows, T_e);
+    cell_matrix* last_air_temp = (cell_matrix*)malloc(n * sizeof(cell_matrix));
+    init_cell_mat_val(last_air_temp, n, air_temp[0].cols, air_temp[0].rows, T_e);
 
     // Pour le pourcentage 
 
@@ -159,14 +161,14 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         
         // DEBUT SIMULATION
 
-        therm_stefan(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, idx_c, coeff_absorption_thermique_air, floor_temp, left_wall_temp, right_wall_temp);
-        copy_f_mat(last_air_temp, air_temp, n);
+        //therm_stefan(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, idx_c, coeff_absorption_thermique_air, floor_temp, left_wall_temp, right_wall_temp);
+        //copy_cell_mat(last_air_temp, air_temp, n);
         therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, idx_c, coeff_absorption_thermique_air);
-        copy_f_mat(last_air_temp, air_temp, n);
-        therm_ray_refl(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, idx_c, coeff_absorption_thermique_air, albedo_beton);
-        copy_f_mat(last_air_temp, air_temp, n);
+        copy_cell_mat(last_air_temp, air_temp, n);
+        //therm_ray_refl(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, idx_c, coeff_absorption_thermique_air, albedo_beton);
+        //copy_cell_mat(last_air_temp, air_temp, n);
         conduction_all_surfaces(n, air_temp, last_air_temp, masses, floor_temp, left_wall_temp, right_wall_temp, &min_temp, &max_temp, idx_c, mu, lambda, tau, fluid_speed, c_p);
-        copy_f_mat(last_air_temp, air_temp, n);
+        copy_cell_mat(last_air_temp, air_temp, n);
         convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1, floor_temp);
 
         // FIN SIMULATION
@@ -175,9 +177,11 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         
         // Inscription des données de température de ce tour de simulation dans le fichier
 
-        write_f_mat(save_air_temp, air_temp, (-273.0), n);
+        write_cell_mat(save_air_temp, air_temp, (-273.0), n);
         
         // Gestion des indices pour faire comme si le fluide se déplaçait de gauche à droite sur la surface
+
+        fluid_offset(air_temp, n);
 
         idx_c.fst = idx_c.fst - 1;    
 
@@ -189,7 +193,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         
         // COPIE POUR AVOIR ITERATION PRECEDENTE
         
-        copy_f_mat(last_air_temp, air_temp, n);
+        copy_cell_mat(last_air_temp, air_temp, n);
         
     }
 
@@ -199,11 +203,12 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     variation_enthalpie_totale = calcul_enthalpie(n, masses, air_temp, first_iteration, c_p);
 
-    printf("Min_temp = %.6f; Max_temp = %.6f; Var enth = %.6f\n", min_temp-273.0, max_temp-273.0, variation_enthalpie_totale);
+    //printf("Min_temp = %.6f; Max_temp = %.6f; Var enth = %.6f\n", min_temp-273.0, max_temp-273.0, variation_enthalpie_totale);
 
 
     
     
+    /*
     // EQUILIBRE THERMIQUE (fonction temporaire !) (plus trop en fait)
     bool do_therm_eq = false;
     if (do_therm_eq) {
@@ -220,7 +225,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
             
             // Inscription des données de température de ce tour de simulation dans le fichier
 
-            write_f_mat(save_air_temp, air_temp, (-273.0), n);
+            write_cell_mat(save_air_temp, air_temp, (-273.0), n);
 
             // Calcul de "l'écart" e 
             double compteur_e = 0;
@@ -237,6 +242,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         printf("L'équilibre a été atteint en %i itérations\n", nb_it_eq);
     }
     
+    */
 
     if (print_to_file) {
         // A la toute fin du fichier contenant toute la simulation on ajoute la température min et max
@@ -246,8 +252,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         
         // Inscription du dernier tour de simulation dans les fichiers dédiés
 
-        write_f_mat(masses_last_first, masses, 0, n);
-        write_f_mat(air_temp_last_first, air_temp, 0, n);
+        write_cell_mat(masses_last_first, masses, 0, n);
+        write_cell_mat(air_temp_last_first, air_temp, 0, n);
         
     }
 
@@ -260,7 +266,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     variation_enthalpie_totale = calcul_enthalpie(n, masses, air_temp, first_iteration, c_p);
     
 
-    printf("Min_temp = %.6f; Max_temp = %.6f; Var enth = %.6f\n", min_temp-273.0, max_temp-273.0, variation_enthalpie_totale);
+    printf("Min_temp = %.6f °C; Max_temp = %.6f °C; Var enth = %.6f J\n", min_temp-273.0, max_temp-273.0, variation_enthalpie_totale);
 
     double* res = (double*)malloc(sizeof(double)*2);
     res[0] = min_temp - 273.0;

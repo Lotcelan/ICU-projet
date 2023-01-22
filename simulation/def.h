@@ -8,13 +8,24 @@
 #include <stdbool.h>
 #include <assert.h>
 
+typedef struct cell {
+    double value;
+    // Coordonnées : origine en haut, au début de la partie gauche du fluide, x selon où va le fluide, y vers le mur droit et z vers le bas : BOUGE AVEC LE FLUIDE
+    int local_x;
+    int local_y;
+    int local_z;
+    // Coordonnées : la même MAIS NE BOUGE PAS AVEC LE FLUIDE (x peut donc aller de 0 à 3n)
+    int global_x;
+    int global_y;
+    int global_z;
+} cell;
 
-typedef struct f_matrix
+typedef struct cell_matrix
 {
     int cols; // Ce sera normalement toujours n
     int rows; // Ce sera normalement toujours n
-    double* data; //1 dim double array
-} f_matrix;
+    cell* data; //1 dim double array
+} cell_matrix;
 
 typedef struct surface
 {
@@ -59,8 +70,6 @@ typedef struct forest
     int size;
 } forest;
 
-
-
 typedef struct idx_couple
 {
     int fst;
@@ -70,6 +79,23 @@ typedef struct idx_couple
 int idx(int i, int j, int size) { 
     if (j > size || i > size) { printf("Index error : i=%i; j=%i; size =%i", i, j, size); } // matrice carrée
     return i*size + j;    
+}
+
+surface_temp get_surf(s_t_matrix* surf_mat, int x, int y) {
+    return surf_mat->data[idx(x, y, surf_mat->cols)];
+}
+
+cell get_cell(cell_matrix* c_mat, int x, int y, int z) {
+    return c_mat[y].data[idx(z, x, c_mat[y].cols)];
+}
+
+void update_cell_value(cell_matrix* c_mat, int x, int y, int z, double new_value) {
+    c_mat[y].data[idx(z, x, c_mat[y].cols)].value = new_value;
+}
+
+void update_min_max_temp(double temp, double* min_temp, double* max_temp) {
+    if (temp < *min_temp) { *min_temp = temp; }
+    if (temp > *max_temp) { *max_temp = temp; }
 }
 
 #endif

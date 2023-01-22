@@ -41,43 +41,44 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
     fclose(config_surface_temp);
 }       
 
-void init_f_mat_val(f_matrix* mat, int n, int cols, int rows, float value) {
-    for (int i = 0; i < n; i++) {
-        mat[i].cols = cols;
-        mat[i].rows = rows;
+void init_cell_mat_val(cell_matrix* mat, int n, int cols, int rows, float value) {
+    for (int y = 0; y < n; y++) {
+        mat[y].cols = cols;
+        mat[y].rows = rows;
 
-        double* temp = (double*)malloc(cols * rows * sizeof(double));
-        if (temp == NULL) {
+        cell* cell_temp = (cell*)malloc(cols * rows * sizeof(cell));
+        if (cell_temp== NULL) {
             exit(EXIT_FAILURE);
         }
-        mat[i].data = temp;
+        mat[y].data = cell_temp;
 
-        for (int j = 0; j < mat[i].rows; j++) {
-            for (int k = 0; k < mat[i].cols; k++) {
-                mat[i].data[idx(j, k, mat[i].cols)] = value;
+        for (int z = 0; z < mat[y].rows; z++) {
+            for (int x = 0; x < mat[y].cols; x++) {
+                cell new_cell = { .value = value, .local_x = x, .local_y = y, .local_z = z, .global_x = x, .global_y = y, .global_z = z}; 
+                mat[y].data[idx(z, x, mat[y].cols)] = new_cell;
             }
         }
     }
 }
 
-void write_f_mat(FILE* file, f_matrix* mat, float modifier, int n) {
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < mat[i].rows; j++) {
-            for (int k = 0; k < mat[i].cols - 1; k++) {
-                fprintf(file, "%.6f;", mat[i].data[idx(j, k, mat[i].cols)] + modifier);
+void write_cell_mat(FILE* file, cell_matrix* mat, float modifier, int n) {
+    for (int y = 0; y < n; y++) {
+        for (int z = 0; z < mat[y].rows; z++) {
+            for (int x = 0; x < mat[y].cols - 1; x++) {
+                fprintf(file, "%.6f;", mat[y].data[idx(z, x, mat[y].cols)].value + modifier);
             }
             
-            fprintf(file, "%.6f\n", mat[i].data[idx(j, mat[i].cols - 1, mat[i].cols)] + modifier);
+            fprintf(file, "%.6f\n", mat[y].data[idx(z, mat[y].cols - 1, mat[y].cols)].value + modifier);
         }
     }
 }
 
-void copy_f_mat(f_matrix* dest, f_matrix* src, int n) {
+void copy_cell_mat(cell_matrix* dest, cell_matrix* src, int n) {
     assert(dest[0].cols == src[0].cols && dest[0].rows == src[0].rows);
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < dest[i].rows; j++) {
-            for (int k = 0; k < dest[i].cols; k++) {
-                dest[i].data[idx(j, k, dest[i].cols)] = src[i].data[idx(j, k, src[i].cols)];
+    for (int y = 0; y < n; y++) {
+        for (int z = 0; z < dest[y].rows; z++) {
+            for (int x = 0; x < dest[y].cols; x++) {
+                dest[y].data[idx(z, x, dest[y].cols)] = src[y].data[idx(z, x, src[y].cols)];
             }
         }
     }
@@ -85,10 +86,24 @@ void copy_f_mat(f_matrix* dest, f_matrix* src, int n) {
 
 bool is_colliding(int x, int y, int z, bool consider_x, bool consider_y, bool consider_z, bounding_box bb) {
     // x, y, z = -1 => ignorer la collision selon cette coordoonnée
-    return  ( ( (x < bb.start_x + bb.width  && x > bb.start_x) || !(consider_x) ) &&
-              ( (y < bb.start_y + bb.length && y > bb.start_y) || !(consider_y) ) &&
+    return  ( ( (x < bb.start_x + bb.length  && x > bb.start_x) || !(consider_x) ) &&
+              ( (y < bb.start_y + bb.width && y > bb.start_y) || !(consider_y) ) &&
               ( (z < bb.start_z + bb.height && z > bb.start_z) || !(consider_z) )
             );
+}
+
+void fluid_offset(cell_matrix* c_mat, int n) {
+    for (int y = 0; y < n; y++) {
+        for (int x = 0; x < c_mat[y].cols; x++) {
+            for (int z = 0; z < c_mat[y].rows; z++) {
+                c_mat[y].data[idx(z, x, c_mat[y].cols)].global_x = c_mat[y].data[idx(z, x, c_mat[y].cols)].global_x + 1;
+            }
+        }
+    }
+}
+
+int global_x_to_street(int x, int n) {
+    return x - n;
 }
 
 #endif
