@@ -16,35 +16,17 @@ double air_temp_calc_ray(int x, int y, int z, double lambda, double tau, double 
     // return prev_temp + radiation_absorbee * tau / c_p / m_i;
 }
 
-double air_temp_calc_stefan(int x, int y, int z, double lambda, double tau, double c_p, double m_i, double prev_temp, double temp_y_moins_1, double fluid_speed, s_t_matrix* floor_temp, s_t_matrix* left_wall_temp, s_t_matrix* right_wall_temp, bool is_under_tree, bool colliding_from_left, bool colliding_from_right) {
+double air_temp_calc_stefan(int x, int y, int z, double lambda, double tau, double c_p, double m_i, double prev_temp, double temp_x_moins_1, double fluid_speed, s_t_matrix* floor_temp, s_t_matrix* left_wall_temp, s_t_matrix* right_wall_temp, bool is_under_tree, bool colliding_from_left, bool colliding_from_right) {
     double sigma = 5.67 / 100000000;
     double sum_T_4_surf = 0;
-    if (!is_under_tree)        { sum_T_4_surf += pow(floor_temp     ->data[idx(x, y, floor_temp->cols)].temp,      4) * floor_temp->data[idx(x, y, floor_temp->cols)].surf.width * floor_temp->data[idx(x, y, floor_temp->cols)].surf.length; }
-    if (!colliding_from_left)  { sum_T_4_surf += pow(left_wall_temp ->data[idx(z, y, left_wall_temp->cols)].temp,  4) * left_wall_temp ->data[idx(z, y, left_wall_temp->cols)].surf.width * left_wall_temp ->data[idx(z, y, left_wall_temp->cols)].surf.length; }
-    if (!colliding_from_right) { sum_T_4_surf += pow(right_wall_temp->data[idx(x, y, right_wall_temp->cols)].temp, 4) * right_wall_temp->data[idx(x, y, right_wall_temp->cols)].surf.width * right_wall_temp->data[idx(x, y, right_wall_temp->cols)].surf.length; }
+    if (!is_under_tree)        { sum_T_4_surf += pow(floor_temp     ->data[idx(y, x, floor_temp->cols)].temp,      4) * floor_temp->data[idx(y, x, floor_temp->cols)].surf.width * floor_temp->data[idx(y, x, floor_temp->cols)].surf.length; }
+    if (!colliding_from_left)  { sum_T_4_surf += pow(left_wall_temp ->data[idx(z, x, left_wall_temp->cols)].temp,  4) * left_wall_temp ->data[idx(z, x, left_wall_temp->cols)].surf.width * left_wall_temp ->data[idx(z, x, left_wall_temp->cols)].surf.length; }
+    if (!colliding_from_right) { sum_T_4_surf += pow(right_wall_temp->data[idx(z, x, right_wall_temp->cols)].temp, 4) * right_wall_temp->data[idx(z, x, right_wall_temp->cols)].surf.width * right_wall_temp->data[idx(z, x, right_wall_temp->cols)].surf.length; }
 
-    return ( fluid_speed / 3.6 / lambda * temp_y_moins_1 + prev_temp / tau + sigma * sum_T_4_surf / m_i / c_p ) /  ( fluid_speed / 3.6 / lambda + 1 / tau );
+    return ( fluid_speed / 3.6 / lambda * temp_x_moins_1 + prev_temp / tau + sigma * sum_T_4_surf / m_i / c_p ) /  ( fluid_speed / 3.6 / lambda + 1 / tau );
 }
 
-double air_temp_calc_floor_stefan(int x, int y, int z, double lambda, double tau, double c_p, double m_i, double prev_temp, double temp_y_moins_1, double fluid_speed, surface_temp floor_temp, bool is_under_tree) {
-    double sigma = 5.67 / 100000000;
-    double sum_T_4_surf = 0;
-    if (!is_under_tree) {
-        sum_T_4_surf = pow(floor_temp.temp, 4) * floor_temp.surf.width * floor_temp.surf.length;
-        return ( fluid_speed / 3.6 / lambda * temp_y_moins_1 + prev_temp / tau + sigma * sum_T_4_surf / m_i / c_p ) /  ( fluid_speed / 3.6 / lambda + 1 / tau );
-    }
-    return prev_temp;
-}
 
-double air_temp_calc_wall_stefan(int x, int y, int z, double lambda, double tau, double c_p, double m_i, double prev_temp, double temp_y_moins_1, double fluid_speed, surface_temp wall_temp, bool colliding_from) {
-    double sigma = 5.67 / 100000000;
-    double sum_T_4_surf = 0;
-    if (!colliding_from) {
-        sum_T_4_surf = pow(wall_temp.temp, 4) * wall_temp.surf.width * wall_temp.surf.length;
-        return ( fluid_speed / 3.6 / lambda * temp_y_moins_1 + prev_temp / tau + sigma * sum_T_4_surf / m_i / c_p ) /  ( fluid_speed / 3.6 / lambda + 1 / tau );
-    }
-    return prev_temp;
-}
 //double floor_temp_calc_ray(int i, int j, double lambda, double mu, double tau, surface_temp s_t, f_matrix* air_temp, double c_p, double m_i, double fluid_speed) {
 //    double ray_solaire_surf = 341; //1230 * exp( -1 / (3.8 * sin(3.14 / 180 * (10 + 1.6))));
 //    if (j > 0 && (j % air_temp->cols != 0)) {

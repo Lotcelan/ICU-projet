@@ -51,7 +51,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     //bounding_box tree2_bb = { .start_x = 10, .start_y = 30, .start_z = 20, .width = 15, .length = 15, .height = 15 };
     //tree tree2 = { .bb = tree2_bb };
-//
+
     //bounding_box tree3_bb = { .start_x = 30, .start_y = 20, .start_z = 0, .width = 10, .length = 30, .height = 5 };
     //tree tree3 = { .bb = tree3_bb };
 
@@ -127,14 +127,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     // LA SIMULATION
 
-    idx_couple idx_c;
-    idx_c.fst = n-1;
-    idx_c.snd = n-1;
-
     double min_temp = T_e;
     double max_temp = T_e;
-
-    int count = 0;
 
     // Pour avoir l'itération précédente
 
@@ -148,26 +142,23 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     float nb_decoupage = 20;
     printf("\n");
 
-    while (idx_c.snd != 0 || (continuer_meme_si_fini && count < nb_iterations_supplementaires)) {
+    while (iteration <= 2*n) {
         
         // Pourcentage
 
         if ((int)iteration % (100 / (int)nb_decoupage) == 0) {
             printf("\x1b[A\r%.6f%%          \n", iteration * 100 / nb_total_iteration);
         }
-        if (continuer_meme_si_fini && idx_c.snd <= 0) {
-            count++;
-        }
-        
+
         // DEBUT SIMULATION
 
-        //therm_stefan(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, idx_c, coeff_absorption_thermique_air, floor_temp, left_wall_temp, right_wall_temp);
+        //therm_stefan(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air, floor_temp, left_wall_temp, right_wall_temp);
         //copy_cell_mat(last_air_temp, air_temp, n);
-        therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, idx_c, coeff_absorption_thermique_air);
+        therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air);
         copy_cell_mat(last_air_temp, air_temp, n);
-        //therm_ray_refl(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, idx_c, coeff_absorption_thermique_air, albedo_beton);
-        //copy_cell_mat(last_air_temp, air_temp, n);
-        conduction_all_surfaces(n, air_temp, last_air_temp, masses, floor_temp, left_wall_temp, right_wall_temp, &min_temp, &max_temp, idx_c, mu, lambda, tau, fluid_speed, c_p);
+        therm_ray_refl(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air, albedo_beton);
+        copy_cell_mat(last_air_temp, air_temp, n);
+        conduction_all_surfaces(n, air_temp, last_air_temp, masses, floor_temp, left_wall_temp, right_wall_temp, &min_temp, &max_temp, mu, lambda, tau, fluid_speed, c_p);
         copy_cell_mat(last_air_temp, air_temp, n);
         convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1, floor_temp);
 
@@ -182,14 +173,6 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         // Gestion des indices pour faire comme si le fluide se déplaçait de gauche à droite sur la surface
 
         fluid_offset(air_temp, n);
-
-        idx_c.fst = idx_c.fst - 1;    
-
-        if (idx_c.fst <= 0) {
-            idx_c.fst = 0;
-            idx_c.snd = idx_c.snd - 1;
-            if (idx_c.snd <= 0) { idx_c.snd= 0; }
-        }
         
         // COPIE POUR AVOIR ITERATION PRECEDENTE
         
@@ -208,18 +191,19 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     
     
-    /*
+    
     // EQUILIBRE THERMIQUE (fonction temporaire !) (plus trop en fait)
-    bool do_therm_eq = false;
-    if (do_therm_eq) {
+    // ne peut plus atteindre l'équilibre LOL
+    if (continuer_meme_si_fini) {
         double e = 1;
         int nb_it_eq = 0;
-        while (e >= 0.001) {
+        while (e >= 0.007 && (nb_iterations_supplementaires == -1 || nb_it_eq < nb_iterations_supplementaires)) {
             nb_it_eq++;
         
-            copy_f_mat(last_air_temp, air_temp, n);
-            therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, idx_c, coeff_absorption_thermique_air);
-            copy_f_mat(last_air_temp, air_temp, n);
+            therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air);
+            copy_cell_mat(last_air_temp, air_temp, n);
+            therm_ray_refl(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air, albedo_beton);
+            copy_cell_mat(last_air_temp, air_temp, n);
             convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1, floor_temp);
             iteration++;
             
@@ -229,10 +213,10 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
             // Calcul de "l'écart" e 
             double compteur_e = 0;
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < air_temp[i].rows; j++) {
-                    for (int k = 0; k < air_temp[i].cols; k++) {                
-                        compteur_e += pow(air_temp[i].data[idx(j, k, air_temp[i].cols)] - last_air_temp[i].data[idx(j, k, air_temp[i].cols)], 2);
+            for (int y = 0; y < n; y++) {
+                for (int z = 0; z < air_temp[y].rows; z++) {
+                    for (int x = 0; x < air_temp[y].cols; x++) {                
+                        compteur_e += pow(get_cell(air_temp, x, y, z).value - get_cell(last_air_temp, x, y, z).value, 2);
                     }
                 }
             }
@@ -242,7 +226,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         printf("L'équilibre a été atteint en %i itérations\n", nb_it_eq);
     }
     
-    */
+    
 
     if (print_to_file) {
         // A la toute fin du fichier contenant toute la simulation on ajoute la température min et max

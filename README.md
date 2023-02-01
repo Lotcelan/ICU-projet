@@ -98,6 +98,10 @@ Une installation classique de C suffit.
 
 # TODO
 
+## Misc
+
+- [ ] "Continuer meme si fini" argument -> "attendre équilibre" et valeur = cap du nb d'itérations supp
+
 ## Tests
 
 - [x] Tout fait
