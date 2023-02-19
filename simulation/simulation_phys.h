@@ -30,7 +30,7 @@ void conduction_all_surfaces(int n, cell_matrix* air_temp, cell_matrix* last_air
             }
             // DROIT
             if (get_cell(air_temp, x, n-1, z).global_x >= n && get_cell(air_temp, x, n-1, z).global_x < 2*n) {
-                double new_T_r_wall = wall_temp_calc(z, x, n-1, lambda, mu, tau, get_surf(left_wall_temp, z, global_x_to_street(get_cell(air_temp, x, n-1, air_temp[n-1].rows - 1).global_x, n)), last_air_temp, c_p, get_cell(masses, x, n-1, z).value, fluid_speed);
+                double new_T_r_wall = wall_temp_calc(z, x, n-1, lambda, mu, tau, get_surf(right_wall_temp, z, global_x_to_street(get_cell(air_temp, x, n-1, air_temp[n-1].rows - 1).global_x, n)), last_air_temp, c_p, get_cell(masses, x, n-1, z).value, fluid_speed);
                 update_cell_value(air_temp, x, n-1, z, new_T_r_wall);
                 update_min_max_temp(new_T_r_wall, min_temp, max_temp);
             }
@@ -71,7 +71,7 @@ void therm_ray(int n, cell_matrix* air_temp, cell_matrix* last_air_temp, cell_ma
                 bool is_under_tree = false;
                 cell current_cell = get_cell(air_temp, x, y, z);
                 for (int t = 0; t < fr.size; t++) {
-                    if ( (is_colliding(current_cell.global_x, current_cell.global_y, -1, true, true, false, fr.tree_list[t].bb) && current_cell.global_z >= - (fr.tree_list[t].bb.start_z + fr.tree_list[t].bb.height) + last_air_temp[x].rows - 1)) { // potentiellement raycasting ici plus tard
+                    if ( (is_colliding(global_x_to_street(current_cell.global_x, n), current_cell.global_y, -1, true, true, false, fr.tree_list[t].bb) && current_cell.global_z >= fr.tree_list[t].bb.start_z )) { // potentiellement raycasting ici plus tard
                         //printf("Under tree : %i, %i, %i et absoulete_y + y = %i, idx_fst > 0 : %i\n", x, y, z, absolute_y + y, (idx_c.fst > 0) ? 1 : (-1));
                         is_under_tree = true;
                     }

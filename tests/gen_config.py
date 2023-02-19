@@ -2,7 +2,7 @@ import sys, json
 
 def val_by_loc(default_value, list, i, j):
     for elem in list:
-        if j >= elem["start_idx"][0] and j < elem["start_idx"][0] + elem["width"] and i >= elem["start_idx"][1] and i < elem["start_idx"][1] + elem["height"]:
+        if j >= elem["start_idx"][1] and j < elem["start_idx"][1] + elem["width"] and i >= elem["start_idx"][0] and i < elem["start_idx"][0] + elem["height"]:
             return elem["value"]
     return default_value
 

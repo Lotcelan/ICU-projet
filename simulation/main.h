@@ -32,22 +32,29 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     const double lambda = L / n; // Longueur infinitésimale
     const double mu = l / n; // Largeur infinitésimale
-    const double height_tot = fluid_volume / (l * L); // On peut alors trouver la hauteur que va occuper le fluide
-    const double h_n = height_tot / n; // Soit la hauteur infinitésimale
+    //const double height_tot = fluid_volume / (l * L); // On peut alors trouver la hauteur que va occuper le fluide
+    //const double h_n = height_tot / n; // Soit la hauteur infinitésimale
 
     double variation_enthalpie_totale = 0;
     double temp_x_plus_1, temp_x_moins_1, temp_y_plus_1, temp_y_moins_1, temp_z_plus_1, temp_z_moins_1; // Représentent à l'itération précédente les températures décalées de + ou - 1 selon x, y ou z
 
     const double tau = lambda / (fluid_speed / 3.6); // temps (en s) de simulation à tour de simulation
 
+    //version alt
+    const double height_tot = 18;
+    fluid_volume = L * l * height_tot;
+    const double h_n = height_tot / n; // Soit la hauteur infinitésimale
+
     printf("Lambda = %.6f; mu = %.6f; h_n = %.6f; tau = %.6f\n", lambda, mu, h_n, tau);
 
     // Paramètres qui ne sont pas en paramètre de l'exécutable (plus le temps de faire ça)
 
-    // x : du début vers la fin; y : du mur gauche; z : de bas en haut
+    // x : du début vers la fin; y : du mur gauche; z : de haut en bas
     // a refaire
-    bounding_box tree1_bb = { .start_x = 10, .start_y = 20, .start_z = 20, .width = 10, .length = 10, .height = 10 };
+    bounding_box tree1_bb = { .start_x = 10, .start_y = 16, .start_z = 5, .width = 15, .length = 15, .height = 35 };
     tree tree1 = { .bb = tree1_bb };
+    //bounding_box tree2_bb = { .start_x = 10, .start_y = 34, .start_z = 5, .width = 15, .length = 15, .height = 35 };
+    //tree tree2 = { .bb = tree2_bb };
 
     //bounding_box tree2_bb = { .start_x = 10, .start_y = 30, .start_z = 20, .width = 15, .length = 15, .height = 15 };
     //tree tree2 = { .bb = tree2_bb };

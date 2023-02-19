@@ -86,9 +86,9 @@ void copy_cell_mat(cell_matrix* dest, cell_matrix* src, int n) {
 
 bool is_colliding(int x, int y, int z, bool consider_x, bool consider_y, bool consider_z, bounding_box bb) {
     // x, y, z = -1 => ignorer la collision selon cette coordoonnée
-    return  ( ( (x < bb.start_x + bb.length  && x > bb.start_x) || !(consider_x) ) &&
-              ( (y < bb.start_y + bb.width && y > bb.start_y) || !(consider_y) ) &&
-              ( (z < bb.start_z + bb.height && z > bb.start_z) || !(consider_z) )
+    return  ( ( (x <= bb.start_x + bb.length && x >= bb.start_x) || !(consider_x) ) &&
+              ( (y <= bb.start_y + bb.width  && y >= bb.start_y) || !(consider_y) ) &&
+              ( (z <= bb.start_z + bb.height && z >= bb.start_z) || !(consider_z) )
             );
 }
 
