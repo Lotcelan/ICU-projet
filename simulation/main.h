@@ -69,7 +69,9 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     forest fr = { .tree_list = list, .size = 1 };
 
     double coeff_absorption_thermique_air = 0.0007;
-    double albedo_beton = 0.2;
+    double albedo_beton = 0.3;
+    double albedo_asphalte = 0.1;
+    double albedo_brique = 0.45;
 
     if (floor_temp == NULL || air_temp == NULL || masses == NULL || left_wall_temp == NULL || right_wall_temp == NULL) {
         exit(EXIT_FAILURE);
@@ -77,9 +79,9 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     // TEMPERATURES DU SOL ET DES MURS
 
-    init_surface_temp(floor_temp, n, n, config_floor_temp, config_floor_h, mu, lambda);
-    init_surface_temp(left_wall_temp, n, n, config_l_wall_temp, config_l_wall_h, mu, lambda);
-    init_surface_temp(right_wall_temp, n, n, config_r_wall_temp, config_r_wall_h, mu, lambda);
+    init_surface_temp(floor_temp, n, n, config_floor_temp, config_floor_h, mu, lambda, albedo_asphalte, albedo_beton, albedo_brique);
+    init_surface_temp(left_wall_temp, n, n, config_l_wall_temp, config_l_wall_h, mu, lambda, albedo_asphalte, albedo_beton, albedo_brique);
+    init_surface_temp(right_wall_temp, n, n, config_r_wall_temp, config_r_wall_h, mu, lambda, albedo_asphalte, albedo_beton, albedo_brique);
 
     // TEMPERATURES DE L'AIR
 
@@ -163,7 +165,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         //copy_cell_mat(last_air_temp, air_temp, n);
         therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air);
         copy_cell_mat(last_air_temp, air_temp, n);
-        therm_ray_refl(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air, albedo_beton);
+        therm_ray_refl(n, air_temp, last_air_temp, masses, floor_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air);
         copy_cell_mat(last_air_temp, air_temp, n);
         conduction_all_surfaces(n, air_temp, last_air_temp, masses, floor_temp, left_wall_temp, right_wall_temp, &min_temp, &max_temp, mu, lambda, tau, fluid_speed, c_p);
         copy_cell_mat(last_air_temp, air_temp, n);
@@ -209,7 +211,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         
             therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air);
             copy_cell_mat(last_air_temp, air_temp, n);
-            therm_ray_refl(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air, albedo_beton);
+            therm_ray_refl(n, air_temp, last_air_temp, masses, floor_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air);
             copy_cell_mat(last_air_temp, air_temp, n);
             convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1, floor_temp);
             iteration++;

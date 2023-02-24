@@ -158,6 +158,7 @@ def main():
             for i in range(tree[1][0]):
                 for j in range(tree[1][1]):
                     for k in range(tree[1][2]):
+                        #if (i == tree[1][0] or j == tree[1][1] or k == tree[1][2]):
                         pr.draw_cube((forest_start_X + tree[0][0] + i, rows - (tree[0][2] + tree[1][2]) + k, forest_start_Z + tree[0][1] + j), 1, 1, 1, pr.Color(25,255,25, 3))
 
         # DRAW FLUID

@@ -13,7 +13,7 @@ char* file_id_ext(char* name, int id) {
     return strcat(strcat(strcpy(res,name),nb),".tipe");
 }
 
-void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface_temp_filename, char* config_surface_h_filename, double mu, double lambda) {
+void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface_temp_filename, char* config_surface_h_filename, double mu, double lambda, double albedo_asphalte, double albedo_beton, double albedo_brique) {
     tab->cols = cols;
     tab->rows = rows;
     
@@ -36,6 +36,29 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
             fscanf(config_surface_h, "%f", &h);
             tab->data[idx(j, k, tab->cols)].h = h; // 1/h_i + e/lambda (1/hi dépend e = épaisseur surface en (m) et lambda = conductivité thermique (ici celle du béton)); cf https://fr.wikipedia.org/wiki/Coefficient_de_convection_thermique
             tab->data[idx(j, k, tab->cols)].surf = new_surf;
+
+            double chosen_albedo = 0;
+            if (h - 2.16 <= 0.001) {
+                chosen_albedo = albedo_beton;
+                //printf("béton1\n");
+            }
+            else if (h - 2.195 <= 0.001) {
+                chosen_albedo = albedo_beton;
+                //printf("béton2\n");
+            }
+            else if (h - 2.544 <= 0.001) {
+                chosen_albedo = albedo_asphalte;
+                //printf("asphalte\n");
+            }
+            else if (h - 4.595 <= 0.001) {
+                chosen_albedo = albedo_brique;
+                //printf("brique\n");
+            }
+            else {
+                chosen_albedo = albedo_beton;
+                //printf("béton3\n");
+            }
+            tab->data[idx(j, k, tab->cols)].albedo = chosen_albedo;
         }
     }
     fclose(config_surface_temp);

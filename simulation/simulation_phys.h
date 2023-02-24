@@ -38,8 +38,7 @@ void conduction_all_surfaces(int n, cell_matrix* air_temp, cell_matrix* last_air
     }
 }
 
-void therm_ray_refl(int n, cell_matrix* air_temp, cell_matrix* last_air_temp, cell_matrix* masses, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double fluid_speed, double c_p, forest fr, double coeff_absorption_thermique_air, double albedo) {
-    double radiation_absorbee = albedo * 1230 * exp( -1 / (3.8 * sin(3.14 / 180 * (10 + 1.6)))) * coeff_absorption_thermique_air * h_n;
+void therm_ray_refl(int n, cell_matrix* air_temp, cell_matrix* last_air_temp, cell_matrix* masses, s_t_matrix* floor_temp, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double fluid_speed, double c_p, forest fr, double coeff_absorption_thermique_air) {
     for (int y = 0; y < n; y++ ) {
         for (int x = 0; x < last_air_temp[y].cols; x++) {
             for (int z = 0; z < last_air_temp[y].rows; z++) {
@@ -53,6 +52,7 @@ void therm_ray_refl(int n, cell_matrix* air_temp, cell_matrix* last_air_temp, ce
                     }
                 }
                 if (!is_under_tree) {
+                    double radiation_absorbee = get_surf(floor_temp, x, y).albedo * 1230 * exp( -1 / (3.8 * sin(3.14 / 180 * (10 + 1.6)))) * coeff_absorption_thermique_air * h_n;
                     double new_T_air = air_temp_calc_ray(x, y, z, lambda, tau, c_p, get_cell(masses, x, y, z).value, get_cell(last_air_temp, x, y, z).value, temp_x_moins_1, radiation_absorbee, fluid_speed);
                     update_cell_value(air_temp, x, y, z, new_T_air);
                     update_min_max_temp(new_T_air, min_temp, max_temp);

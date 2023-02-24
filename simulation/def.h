@@ -39,6 +39,7 @@ typedef struct surface_temp
     surface surf;
     double temp;
     double h;
+    double albedo;
 } surface_temp;
 
 typedef struct s_t_matrix
