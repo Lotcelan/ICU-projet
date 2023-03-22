@@ -31,6 +31,9 @@ typedef struct surface
 {
     double width;
     double length;
+    double height;
+    double masse_vol;
+    double capacite_thermique;
 
 } surface;
 

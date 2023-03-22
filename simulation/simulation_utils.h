@@ -13,7 +13,7 @@ char* file_id_ext(char* name, int id) {
     return strcat(strcat(strcpy(res,name),nb),".tipe");
 }
 
-void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface_temp_filename, char* config_surface_h_filename, double mu, double lambda, double albedo_asphalte, double albedo_beton, double albedo_brique) {
+void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface_temp_filename, char* config_surface_h_filename, double mu, double lambda, double albedo_asphalte, double albedo_beton, double albedo_brique, double albedo_ciment) {
     tab->cols = cols;
     tab->rows = rows;
     
@@ -29,7 +29,7 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
 
      for (int j = 0; j < tab->rows; j++) {        // On suppose que murs et sol ont la même dimension
         for (int k = 0; k < tab->cols; k++) {
-            surface new_surf = { .width = mu, .length = lambda};
+            surface new_surf = { .width = mu, .length = lambda, .height = -1, .masse_vol = -1, .capacite_thermique = -1 };
 
             fscanf(config_surface_temp, "%f", &temp);
             tab->data[idx(j, k, tab->cols)].temp = temp;
@@ -40,18 +40,37 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
             double chosen_albedo = 0;
             if (h - 2.16 <= 0.001) {
                 chosen_albedo = albedo_beton;
+                tab->data[idx(j, k, tab->cols)].surf.height = 0.425;
+                tab->data[idx(j, k, tab->cols)].surf.masse_vol = 2000;
+                tab->data[idx(j, k, tab->cols)].surf.capacite_thermique = 880;
                 //printf("béton1\n");
             }
             else if (h - 2.195 <= 0.001) {
                 chosen_albedo = albedo_beton;
+                tab->data[idx(j, k, tab->cols)].surf.height = 0.5;
+                tab->data[idx(j, k, tab->cols)].surf.masse_vol = 2000;
+                tab->data[idx(j, k, tab->cols)].surf.capacite_thermique = 880;
                 //printf("béton2\n");
             }
             else if (h - 2.544 <= 0.001) {
                 chosen_albedo = albedo_asphalte;
+                tab->data[idx(j, k, tab->cols)].surf.height = 0.016;
+                tab->data[idx(j, k, tab->cols)].surf.masse_vol = 2400;
+                tab->data[idx(j, k, tab->cols)].surf.capacite_thermique = 1021;
                 //printf("asphalte\n");
             }
-            else if (h - 4.595 <= 0.001) {
+            else if (h - 4.356 <= 0.001) {
                 chosen_albedo = albedo_brique;
+                tab->data[idx(j, k, tab->cols)].surf.height = 0.02;
+                tab->data[idx(j, k, tab->cols)].surf.masse_vol = 1750;
+                tab->data[idx(j, k, tab->cols)].surf.capacite_thermique = 840;
+                //printf("brique\n");
+            } else if (h - 4.023 <= 0.001) {
+                chosen_albedo = albedo_ciment;
+                tab->data[idx(j, k, tab->cols)].surf.height = 0.016;
+                tab->data[idx(j, k, tab->cols)].surf.masse_vol = 1000;
+                tab->data[idx(j, k, tab->cols)].surf.capacite_thermique = 920;
+
                 //printf("brique\n");
             }
             else {
@@ -109,9 +128,9 @@ void copy_cell_mat(cell_matrix* dest, cell_matrix* src, int n) {
 
 bool is_colliding(int x, int y, int z, bool consider_x, bool consider_y, bool consider_z, bounding_box bb) {
     // x, y, z = -1 => ignorer la collision selon cette coordoonnée
-    return  ( ( (x <= bb.start_x + bb.length && x >= bb.start_x) || !(consider_x) ) &&
-              ( (y <= bb.start_y + bb.width  && y >= bb.start_y) || !(consider_y) ) &&
-              ( (z <= bb.start_z + bb.height && z >= bb.start_z) || !(consider_z) )
+    return  ( ( (x < bb.start_x + bb.length && x >= bb.start_x) || !(consider_x) ) &&
+              ( (y < bb.start_y + bb.width  && y >= bb.start_y) || !(consider_y) ) &&
+              ( (z < bb.start_z + bb.height && z >= bb.start_z) || !(consider_z) )
             );
 }
 

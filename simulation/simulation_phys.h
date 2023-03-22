@@ -62,8 +62,28 @@ void therm_ray_refl(int n, cell_matrix* air_temp, cell_matrix* last_air_temp, ce
     }
 }
 
+void  heat_surface_by_ray(int n, forest fr, s_t_matrix* floor_temp, double tau) {
+    for (int y = 0; y < floor_temp->rows; y++) { 
+        for (int x = 0; x < floor_temp->cols; x++) {
+            bool is_under_tree = false;
+            for (int t = 0; t < fr.size; t++) {
+                if (is_colliding(x,y,0, true, true, false, fr.tree_list[t].bb)) { // potentiellement raycasting ici plus tard
+                    //printf("Under tree : %i, %i, %i et absoulete_y + y = %i, idx_fst > 0 : %i\n", x, y, z, absolute_y + y, (idx_c.fst > 0) ? 1 : (-1));
+                    is_under_tree = true;
+                }
+            }
+            if (!is_under_tree) {
+                surface_temp current_surf = get_surf(floor_temp, y, x);
+                double phi = 340 * 0.5 * current_surf.surf.length * current_surf.surf.width;
+                floor_temp->data[idx(y, x, floor_temp->cols)].temp = current_surf.temp + tau * phi / (current_surf.surf.height * current_surf.surf.length * current_surf.surf.width * current_surf.surf.capacite_thermique * current_surf.surf.masse_vol);
+            }
+        }
+    }
+}
+
 void therm_ray(int n, cell_matrix* air_temp, cell_matrix* last_air_temp, cell_matrix* masses, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double fluid_speed, double c_p, forest fr, double coeff_absorption_thermique_air) {
-    double radiation_absorbee = 1230 * exp( -1 / (3.8 * sin(3.14 / 180 * (10 + 1.6)))) * coeff_absorption_thermique_air * h_n;
+    //double radiation_absorbee = 1230 * exp( -1 / (3.8 * sin(3.14 / 180 * (10 + 1.6)))) * coeff_absorption_thermique_air * h_n;
+    double radiation_absorbee = lambda * mu * 1.36 * 1000 * coeff_absorption_thermique_air;
     for (int y = 0; y < n; y++ ) {
         for (int x = 0; x < last_air_temp[y].cols; x++) {
             for (int z = 0; z < last_air_temp[y].rows; z++) {
