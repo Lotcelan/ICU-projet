@@ -162,7 +162,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
         // DEBUT SIMULATION
 
-        heat_surface_by_ray(n, fr, floor_temp, tau);
+        heat_surface(n, fr, floor_temp, tau, air_temp, lambda, mu, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1);
         //therm_stefan(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air, floor_temp, left_wall_temp, right_wall_temp);
         //copy_cell_mat(last_air_temp, air_temp, n);
         //therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air);

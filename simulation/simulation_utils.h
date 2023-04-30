@@ -43,6 +43,7 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
                 tab->data[idx(j, k, tab->cols)].surf.height = 0.425;
                 tab->data[idx(j, k, tab->cols)].surf.masse_vol = 2000;
                 tab->data[idx(j, k, tab->cols)].surf.capacite_thermique = 880;
+                tab->data[idx(j, k, tab->cols)].surf.conductivite_thermique = 1.75;
                 //printf("béton1\n");
             }
             else if (h - 2.195 <= 0.001) {
@@ -50,6 +51,7 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
                 tab->data[idx(j, k, tab->cols)].surf.height = 0.5;
                 tab->data[idx(j, k, tab->cols)].surf.masse_vol = 2000;
                 tab->data[idx(j, k, tab->cols)].surf.capacite_thermique = 880;
+                tab->data[idx(j, k, tab->cols)].surf.conductivite_thermique = 1.75;
                 //printf("béton2\n");
             }
             else if (h - 2.544 <= 0.001) {
@@ -57,6 +59,7 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
                 tab->data[idx(j, k, tab->cols)].surf.height = 0.016;
                 tab->data[idx(j, k, tab->cols)].surf.masse_vol = 2400;
                 tab->data[idx(j, k, tab->cols)].surf.capacite_thermique = 1021;
+                tab->data[idx(j, k, tab->cols)].surf.conductivite_thermique = 1;
                 //printf("asphalte\n");
             }
             else if (h - 4.356 <= 0.001) {
@@ -64,12 +67,15 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
                 tab->data[idx(j, k, tab->cols)].surf.height = 0.02;
                 tab->data[idx(j, k, tab->cols)].surf.masse_vol = 1750;
                 tab->data[idx(j, k, tab->cols)].surf.capacite_thermique = 840;
+                tab->data[idx(j, k, tab->cols)].surf.conductivite_thermique = 0.84;
+
                 //printf("brique\n");
             } else if (h - 4.023 <= 0.001) {
                 chosen_albedo = albedo_ciment;
                 tab->data[idx(j, k, tab->cols)].surf.height = 0.016;
                 tab->data[idx(j, k, tab->cols)].surf.masse_vol = 1000;
                 tab->data[idx(j, k, tab->cols)].surf.capacite_thermique = 920;
+                tab->data[idx(j, k, tab->cols)].surf.conductivite_thermique = 1.4;
 
                 //printf("brique\n");
             }

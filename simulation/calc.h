@@ -58,6 +58,23 @@ double air_temp_calc_args(int x, int y, int z, double lambda, double mu, double 
     //    + prev_temp[x].data[idx(z, y, prev_temp[x].cols)];   
 }
 
+double solar_radiation_conduction_floor(surface curr_surf, double tau, double phi, double prev_temp, double air_temp_above, double h, double dx, double dy, double temp_x_moins_1, double temp_x_plus_1, double temp_y_moins_1, double temp_y_plus_1) {
+    double S = curr_surf.width * curr_surf.length;
+    double m = curr_surf.masse_vol * S * curr_surf.height;
+    double c = curr_surf.capacite_thermique;
+    double sigma = 5.67 / 100000000;
+    double lambda = curr_surf.conductivite_thermique;
+
+    //return prev_temp * (1 + h * S * tau / (m * c)) + S * tau * (phi - h * air_temp_above) / (m * c);
+    //return 1 / (h * S - m * c / tau) * (h * S * air_temp_above - phi * S - m * c * prev_temp / tau);
+    //return tau / (m * c) * ( m * c / tau * prev_temp + h * S * (prev_temp - air_temp_above) + phi * S );
+    return prev_temp + S * tau / (m * c) * (phi + h * (prev_temp - air_temp_above) - sigma * pow(prev_temp, 4)
+                                            - ( (temp_y_moins_1 - prev_temp) / dy +
+                                                (temp_y_plus_1  - prev_temp) / dy +
+                                                (temp_x_moins_1 - prev_temp) / dx +
+                                                (temp_x_plus_1  - prev_temp) / dx) * lambda);
+}
+
 /*
 double air_temp_calc(int x, int y, int z, double lambda, double mu, double h_n, int nb_subd, double tau, f_matrix* prev_temp, double D, double fluid_speed) {
 

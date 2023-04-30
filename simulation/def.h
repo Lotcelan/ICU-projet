@@ -32,8 +32,9 @@ typedef struct surface
     double width;
     double length;
     double height;
-    double masse_vol;
-    double capacite_thermique;
+    double masse_vol; // rho
+    double capacite_thermique; // c
+    double conductivite_thermique; // lambda
 
 } surface;
 

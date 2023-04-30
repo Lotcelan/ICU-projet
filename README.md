@@ -108,6 +108,5 @@ Une installation classique de C suffit.
 r
 ## Simulation
 
-- [x] Ajouter le rayonnement réfléchi par parois (albedo)
-- [x] Rayonnement infrarouge (corps noir) des murs
+- [ ] Ajouter la perte de température aux murs aussi :upside_down:
 - [ ] Refroidir le tout

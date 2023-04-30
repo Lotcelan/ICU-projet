@@ -93,6 +93,18 @@ def draw_i_th_matrix(screen, H, L, matrix, start_pos_x, start_pos_y, min_temp, m
 def idx(i,j,size):
     return i*size + j
 
+def get_local_min_max(mat_bloc, rows, cols):
+    local_min = mat_bloc[0][0][0]
+    local_max = mat_bloc[0][0][0]
+    for mat in mat_bloc:
+        for i in range(rows):
+            for j in range(cols):
+                if mat[i][j] < local_min:
+                    local_min = mat[i][j] 
+                if mat[i][j]  > local_max:
+                    local_max = mat[i][j]
+    return local_min, local_max
+
 def main(args):
     """
     Objectif : calculer la variation d'enthalpie massique engendrée par la variation de température du fluide
@@ -101,6 +113,7 @@ def main(args):
         - masses_last_fist_file : de même avec les masses de chaque subdivision de fluide
     """
     nb_frames_per_display = 1
+    adaptive_colors = False
 
     if (a := "-sf" in args) or (b := "--skip-frames" in args):
         i = args.index("-sf" if a else "--skip-frames")
@@ -109,7 +122,14 @@ def main(args):
             nb_frames_per_display = value
         except:
             print("Erreur, entrez une valeur cohérente")
-    
+    if (a := "-ac" in args) or (b := "--adaptive-colors" in args):
+        i = args.index("-ac" if a else "--adaptive-colors")
+        try:
+            value = bool(int(args[i+1]))  
+            print(f"Adaptive colors : {value}, arg : {args[i+1]=}")
+            adaptive_colors = value 
+        except:
+            print("Erreur, entrez une valeur cohérente")
     
     
     air_temp_file = "./results/air_temp_0.tipe"
@@ -148,7 +168,11 @@ def main(args):
             for _ in range(nb_frames_per_display):
                 mat_bloc = next(mat_gen)
             for mat in mat_bloc:
-                draw_i_th_matrix(screen, H, L, mat, (i%nb_cols)*L*cols, (i//nb_cols)*H*rows,min_temp, max_temp, rows, cols)
+                if adaptive_colors:
+                    local_min, local_max = get_local_min_max(mat_bloc, rows, cols)
+                    draw_i_th_matrix(screen, H, L, mat, (i%nb_cols)*L*cols, (i//nb_cols)*H*rows,local_min, local_max, rows, cols)
+                else:
+                    draw_i_th_matrix(screen, H, L, mat, (i%nb_cols)*L*cols, (i//nb_cols)*H*rows,min_temp, max_temp, rows, cols)
                 i+=1
             frame += nb_frames_per_display
         

@@ -94,7 +94,8 @@ def main():
     pr.set_camera_mode(camera, pr.CAMERA_FREE) #CAMERA_ORBITAL
 
     #forest = [ [ (10, 16, 5), (15, 15, 35) ], [ (10, 34, 5), (15, 15, 35) ] ]
-    forest = [ [ (10,16,5), (15,15,35) ] ]
+    #forest = [ [ (10,16,5), (15,15,35) ] ]
+    forest = []
     print(cols)
     # https://github.com/raysan5/raylib/blob/master/examples/core/core_split_screen.c
     #vp1 = [0                                     , 0                                     , window_length // 2, window_height // 2] # En haut à gauche
