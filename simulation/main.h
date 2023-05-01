@@ -121,6 +121,9 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     FILE* masses_last_first = fopen(masses_last_first_file, "w");
     FILE* air_temp_last_first = fopen(air_temp_last_first_file, "w");
 
+    FILE* save_floor_temp = fopen("../results/floor_temp_0.tipe", "w");
+    fprintf(save_floor_temp,"%i*%i\n", n, n); 
+
     if (print_to_file) {
 
         fprintf(save_air_temp,"%i*%i*%i\n", n, n, n); // nb mat, rows, cols
@@ -161,8 +164,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         }
 
         // DEBUT SIMULATION
-
-        heat_surface(n, fr, floor_temp, tau, air_temp, lambda, mu, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1);
+        write_surf_temp_mat(save_floor_temp, floor_temp, -273);
+        heat_surface(n, fr, floor_temp, tau, air_temp, lambda, mu);
         //therm_stefan(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air, floor_temp, left_wall_temp, right_wall_temp);
         //copy_cell_mat(last_air_temp, air_temp, n);
         //therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air);

@@ -121,6 +121,15 @@ void write_cell_mat(FILE* file, cell_matrix* mat, float modifier, int n) {
     }
 }
 
+void write_surf_temp_mat(FILE* file, s_t_matrix* mat, float modifier) {
+    for (int y = 0; y < mat->rows; y++) {
+        for (int x = 0; x < mat->cols; x++) {
+            fprintf(file, "%.6f;", mat->data[idx(y, x, mat->cols)].temp + modifier);
+        }
+        fprintf(file, "%.6f\n", mat->data[idx(y, mat->cols - 1, mat->cols)].temp + modifier);
+    }
+}
+
 void copy_cell_mat(cell_matrix* dest, cell_matrix* src, int n) {
     assert(dest[0].cols == src[0].cols && dest[0].rows == src[0].rows);
     for (int y = 0; y < n; y++) {
