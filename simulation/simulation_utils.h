@@ -56,7 +56,7 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
             }
             else if (h - 2.544 <= 0.001) {
                 chosen_albedo = albedo_asphalte;
-                tab->data[idx(j, k, tab->cols)].surf.height = 0.016;
+                tab->data[idx(j, k, tab->cols)].surf.height = 0.3;//0.016;
                 tab->data[idx(j, k, tab->cols)].surf.masse_vol = 2400;
                 tab->data[idx(j, k, tab->cols)].surf.capacite_thermique = 1021;
                 tab->data[idx(j, k, tab->cols)].surf.conductivite_thermique = 1;
@@ -83,7 +83,7 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
                 chosen_albedo = albedo_beton;
                 //printf("béton3\n");
             }
-            tab->data[idx(j, k, tab->cols)].albedo = chosen_albedo;
+            tab->data[idx(j, k, tab->cols)].surf.albedo = chosen_albedo;
         }
     }
     fclose(config_surface_temp);

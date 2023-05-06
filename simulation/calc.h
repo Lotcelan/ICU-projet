@@ -59,34 +59,114 @@ double air_temp_calc_args(int x, int y, int z, double lambda, double mu, double 
 }
 
 void calculer_flux_conduction_surface(surface curr_surf, surface_temp surf_x_moins_1, surface_temp surf_x_plus_1, surface_temp surf_y_moins_1, surface_temp surf_y_plus_1, double* flux_x_moins_1, double* flux_x_plus_1, double* flux_y_moins_1, double* flux_y_plus_1, double prev_temp, double dx, double dy) {
+    double height_contact = 0;
+    
+    if (curr_surf.height >  surf_x_moins_1.surf.height) {
+        height_contact = surf_x_moins_1.surf.height;
+    } else {
+        height_contact = curr_surf.height;
+    }
+    *flux_x_moins_1 =  - 2 * dy * height_contact / dx * (1 / curr_surf.conductivite_thermique + 1 / surf_x_moins_1.surf.conductivite_thermique) * (prev_temp - surf_x_moins_1.temp);
+
+    
+    if (curr_surf.height >  surf_x_plus_1.surf.height) {
+        height_contact = surf_x_plus_1.surf.height;
+    } else {
+        height_contact = curr_surf.height;
+    }
+    *flux_x_plus_1 =  - 2 * dy * height_contact / dx * (1 / curr_surf.conductivite_thermique + 1 / surf_x_plus_1.surf.conductivite_thermique) * (prev_temp  - surf_x_plus_1.temp);
+    
+    if (curr_surf.height >  surf_y_moins_1.surf.height) {
+        height_contact = surf_y_moins_1.surf.height;
+    } else {
+        height_contact = curr_surf.height;
+    }
+    *flux_y_moins_1 =  - 2 * dx * height_contact / dy * (1 / curr_surf.conductivite_thermique + 1 / surf_y_moins_1.surf.conductivite_thermique) * (prev_temp - surf_y_moins_1.temp);
+    
+    if (curr_surf.height >  surf_y_plus_1.surf.height) {
+        height_contact = surf_y_plus_1.surf.height;
+    } else {
+        height_contact = curr_surf.height;
+    }
+    *flux_y_plus_1 = -  2 * dx * height_contact / dy * (1 / curr_surf.conductivite_thermique + 1 / surf_y_plus_1.surf.conductivite_thermique) * (prev_temp - surf_y_plus_1.temp);
+        
+
+    /*
     if (curr_surf.conductivite_thermique - surf_x_moins_1.surf.conductivite_thermique > 0.001) {
-        *flux_x_moins_1 =  - 2 * dy * curr_surf.height / dx * curr_surf.conductivite_thermique * surf_x_moins_1.surf.conductivite_thermique / (curr_surf.conductivite_thermique + surf_x_moins_1.surf.conductivite_thermique) * (prev_temp - surf_x_moins_1.temp);
+        if (curr_surf.height >  surf_x_moins_1.surf.height) {
+            height_contact = surf_x_moins_1.surf.height;
+        } else {
+            height_contact = curr_surf.height;
+        }
+        *flux_x_moins_1 =  2 * dy * height_contact / dx * curr_surf.conductivite_thermique * surf_x_moins_1.surf.conductivite_thermique / (curr_surf.conductivite_thermique + surf_x_moins_1.surf.conductivite_thermique) * (prev_temp - surf_x_moins_1.temp);
     } else {
-        *flux_x_moins_1 = curr_surf.conductivite_thermique * (surf_x_moins_1.temp - prev_temp) / dx * curr_surf.height * dy; 
+        if (curr_surf.height >  surf_x_moins_1.surf.height) {
+            height_contact = surf_x_moins_1.surf.height;
+        } else {
+            height_contact = curr_surf.height;
+        }
+        *flux_x_moins_1 = curr_surf.conductivite_thermique * (surf_x_moins_1.temp - prev_temp) / dx * height_contact * dy; 
     }
+
+    
     if (curr_surf.conductivite_thermique - surf_x_plus_1.surf.conductivite_thermique > 0.001) {
-        *flux_x_moins_1 =  - 2 * dy * curr_surf.height / dx * curr_surf.conductivite_thermique * surf_x_plus_1.surf.conductivite_thermique / (curr_surf.conductivite_thermique + surf_x_plus_1.surf.conductivite_thermique) * (prev_temp - surf_x_plus_1.temp);
+        if (curr_surf.height >  surf_x_plus_1.surf.height) {
+            height_contact = surf_x_plus_1.surf.height;
+        } else {
+            height_contact = curr_surf.height;
+        }
+        *flux_x_plus_1 =   2 * dy * height_contact / dx * curr_surf.conductivite_thermique * surf_x_plus_1.surf.conductivite_thermique / (curr_surf.conductivite_thermique + surf_x_plus_1.surf.conductivite_thermique) * (prev_temp  - surf_x_plus_1.temp);
     } else {
-        *flux_x_moins_1 =  curr_surf.conductivite_thermique * (surf_x_plus_1.temp - prev_temp) / dx * curr_surf.height * dy; 
+        if (curr_surf.height >  surf_x_plus_1.surf.height) {
+            height_contact = surf_x_plus_1.surf.height;
+        } else {
+            height_contact = curr_surf.height;
+        }
+        *flux_x_plus_1 =  curr_surf.conductivite_thermique * (surf_x_plus_1.temp - prev_temp) / dx * height_contact * dy; 
     }
+
+    
     if (curr_surf.conductivite_thermique - surf_y_moins_1.surf.conductivite_thermique > 0.001) {
-        *flux_x_moins_1 =  - 2 * dx * curr_surf.height / dy * curr_surf.conductivite_thermique * surf_y_moins_1.surf.conductivite_thermique / (curr_surf.conductivite_thermique + surf_y_moins_1.surf.conductivite_thermique) * (prev_temp - surf_y_moins_1.temp);
+        if (curr_surf.height >  surf_y_moins_1.surf.height) {
+            height_contact = surf_y_moins_1.surf.height;
+        } else {
+            height_contact = curr_surf.height;
+        }
+        *flux_y_moins_1 =   2 * dx * height_contact / dy * curr_surf.conductivite_thermique * surf_y_moins_1.surf.conductivite_thermique / (curr_surf.conductivite_thermique + surf_y_moins_1.surf.conductivite_thermique) * (prev_temp - surf_y_moins_1.temp);
     } else {
-        *flux_x_moins_1 =  curr_surf.conductivite_thermique * (surf_y_moins_1.temp - prev_temp) / dy * curr_surf.height * dx; 
+        if (curr_surf.height >  surf_y_moins_1.surf.height) {
+            height_contact = surf_y_moins_1.surf.height;
+        } else {
+            height_contact = curr_surf.height;
+        }
+        *flux_y_moins_1 =  curr_surf.conductivite_thermique * (surf_y_moins_1.temp - prev_temp) / dy * height_contact * dx; 
     }
+
+    
     if (curr_surf.conductivite_thermique - surf_y_plus_1.surf.conductivite_thermique > 0.001) {
-        *flux_x_moins_1 =  - 2 * dx * curr_surf.height / dy * curr_surf.conductivite_thermique * surf_y_plus_1.surf.conductivite_thermique / (curr_surf.conductivite_thermique + surf_y_plus_1.surf.conductivite_thermique) * (prev_temp - surf_y_plus_1.temp);
+        if (curr_surf.height >  surf_y_plus_1.surf.height) {
+            height_contact = surf_y_plus_1.surf.height;
+        } else {
+            height_contact = curr_surf.height;
+        }
+        *flux_y_plus_1 =   2 * dx * height_contact / dy * curr_surf.conductivite_thermique * surf_y_plus_1.surf.conductivite_thermique / (curr_surf.conductivite_thermique + surf_y_plus_1.surf.conductivite_thermique) * (prev_temp - surf_y_plus_1.temp);
     } else {
-        *flux_x_moins_1 = curr_surf.conductivite_thermique * (surf_y_plus_1.temp - prev_temp) / dy * curr_surf.height * dx; 
+        if (curr_surf.height >  surf_y_plus_1.surf.height) {
+            height_contact = surf_y_plus_1.surf.height;
+        } else {
+            height_contact = curr_surf.height;
+        }
+        *flux_y_plus_1 = curr_surf.conductivite_thermique * (surf_y_plus_1.temp - prev_temp) / dy * height_contact * dx; 
     }
+    */
 }
 
 double solar_radiation_conduction_floor(surface curr_surf, double tau, double phi, double prev_temp, double air_temp_above, double h, double dx, double dy, surface_temp surf_x_moins_1, surface_temp surf_x_plus_1, surface_temp surf_y_moins_1, surface_temp surf_y_plus_1) {
     double S = curr_surf.width * curr_surf.length;
     double m = curr_surf.masse_vol * S * curr_surf.height;
     double c = curr_surf.capacite_thermique;
+    double al = curr_surf.albedo;
     double sigma = 5.67 / 100000000;
-    double lambda = curr_surf.conductivite_thermique;
     double flux_x_plus_1, flux_x_moins_1, flux_y_plus_1, flux_y_moins_1; // flux pas surfaciques (en W quoi)
 
     calculer_flux_conduction_surface(curr_surf, surf_x_moins_1, surf_x_plus_1, surf_y_moins_1, surf_y_plus_1, &flux_x_moins_1, &flux_x_plus_1, &flux_y_moins_1, &flux_y_plus_1, prev_temp, dx, dy);
@@ -94,7 +174,7 @@ double solar_radiation_conduction_floor(surface curr_surf, double tau, double ph
     //return prev_temp * (1 + h * S * tau / (m * c)) + S * tau * (phi - h * air_temp_above) / (m * c);
     //return 1 / (h * S - m * c / tau) * (h * S * air_temp_above - phi * S - m * c * prev_temp / tau);
     //return tau / (m * c) * ( m * c / tau * prev_temp + h * S * (prev_temp - air_temp_above) + phi * S );
-    return prev_temp + tau / (m * c) * (S * (phi + h * (prev_temp - air_temp_above) - sigma * pow(prev_temp, 4)) + flux_x_moins_1 + flux_x_plus_1 + flux_y_moins_1 + flux_y_plus_1 );                                            
+    return prev_temp + tau / (m * c) * (S * ((1 - al) * phi + h * (prev_temp - air_temp_above) - sigma * pow(prev_temp, 4)) + flux_x_moins_1 + flux_x_plus_1 + flux_y_moins_1 + flux_y_plus_1 );                                            
 }
 
 /*

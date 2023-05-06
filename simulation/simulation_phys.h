@@ -37,7 +37,7 @@ void conduction_all_surfaces(int n, cell_matrix* air_temp, cell_matrix* last_air
         }
     }
 }
-
+/*
 void therm_ray_refl(int n, cell_matrix* air_temp, cell_matrix* last_air_temp, cell_matrix* masses, s_t_matrix* floor_temp, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double fluid_speed, double c_p, forest fr, double coeff_absorption_thermique_air) {
     for (int y = 0; y < n; y++ ) {
         for (int x = 0; x < last_air_temp[y].cols; x++) {
@@ -61,7 +61,7 @@ void therm_ray_refl(int n, cell_matrix* air_temp, cell_matrix* last_air_temp, ce
         }
     }
 }
-
+*/
 void  heat_surface(int n, forest fr, s_t_matrix* floor_temp, double tau, cell_matrix* air_temp, double dx, double dy) {
     double phi = 0;
     surface_temp surf_x_plus_1, surf_x_moins_1, surf_y_plus_1, surf_y_moins_1;
@@ -76,7 +76,7 @@ void  heat_surface(int n, forest fr, s_t_matrix* floor_temp, double tau, cell_ma
                 }
             }
             if (!is_under_tree) {
-                phi = 340;
+                phi = 170;
             }
             else {
                 phi = 0;

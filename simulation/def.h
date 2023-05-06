@@ -35,6 +35,8 @@ typedef struct surface
     double masse_vol; // rho
     double capacite_thermique; // c
     double conductivite_thermique; // lambda
+    double albedo;
+
 
 } surface;
 
@@ -43,7 +45,6 @@ typedef struct surface_temp
     surface surf;
     double temp;
     double h;
-    double albedo;
 } surface_temp;
 
 typedef struct s_t_matrix

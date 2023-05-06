@@ -51,22 +51,24 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     // x : du début vers la fin; y : du mur gauche; z : de haut en bas
     // a refaire
-    bounding_box tree1_bb = { .start_x = 10, .start_y = 16, .start_z = 5, .width = 15, .length = 15, .height = 35 };
+    bounding_box tree1_bb = { .start_x = 10, .start_y = 10, .start_z = 20, .width = 10, .length = 10, .height = 15 };
     tree tree1 = { .bb = tree1_bb };
-    //bounding_box tree2_bb = { .start_x = 10, .start_y = 34, .start_z = 5, .width = 15, .length = 15, .height = 35 };
-    //tree tree2 = { .bb = tree2_bb };
+    
+    bounding_box tree2_bb = { .start_x = 30, .start_y = 10, .start_z = 20, .width = 10, .length = 10, .height = 15 };
+    tree tree2 = { .bb = tree2_bb };
 
-    //bounding_box tree2_bb = { .start_x = 10, .start_y = 30, .start_z = 20, .width = 15, .length = 15, .height = 15 };
-    //tree tree2 = { .bb = tree2_bb };
+    bounding_box tree3_bb = { .start_x = 10, .start_y = 30, .start_z = 20, .width = 10, .length = 10, .height = 15 };
+    tree tree3 = { .bb = tree3_bb };
 
-    //bounding_box tree3_bb = { .start_x = 30, .start_y = 20, .start_z = 0, .width = 10, .length = 30, .height = 5 };
-    //tree tree3 = { .bb = tree3_bb };
+    bounding_box tree4_bb = { .start_x = 30, .start_y = 30, .start_z = 20, .width = 10, .length = 10, .height = 15 };
+    tree tree4 = { .bb = tree4_bb };
 
-    tree* list = (tree*)malloc(1 * sizeof(tree));
+    tree* list = (tree*)malloc(4 * sizeof(tree));
     list[0] = tree1;
-    //list[1] = tree2;
-    //list[2] = tree3;
-    forest fr = { .tree_list = list, .size = 1 };
+    list[1] = tree2;
+    list[2] = tree3;
+    list[3] = tree4;
+    forest fr = { .tree_list = list, .size = 4 };
 
     double coeff_absorption_thermique_air = 0.0007;
     double albedo_beton = 0.4;
@@ -208,6 +210,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     
     // EQUILIBRE THERMIQUE (fonction temporaire !) (plus trop en fait)
     // ne peut plus atteindre l'équilibre LOL
+    /*
     if (continuer_meme_si_fini) {
         double e = 1;
         int nb_it_eq = 0;
@@ -239,7 +242,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
         printf("L'équilibre a été atteint en %i itérations\n", nb_it_eq);
     }
-    
+    */
     
 
     if (print_to_file) {
