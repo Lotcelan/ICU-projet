@@ -120,7 +120,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     // Les fichiers de sauvegarde
 
     FILE* save_air_temp = fopen(save_air_temp_filename, "w");
-    FILE* masses_last_first = fopen(masses_last_first_file, "w");
+    FILE* masses_last_fircoeff_absorption_thermique_airst = fopen(masses_last_first_file, "w");
     FILE* air_temp_last_first = fopen(air_temp_last_first_file, "w");
 
     FILE* save_floor_temp = fopen("../results/floor_temp_0.tipe", "w");

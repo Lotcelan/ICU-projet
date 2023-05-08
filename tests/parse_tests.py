@@ -1,7 +1,7 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import sys
-matplotlib.use("GTK4Agg")
+#matplotlib.use("GTK4Agg")
 import pandas as pd
 
 def parse_file(filename):
@@ -96,13 +96,16 @@ def main(args):
 
         indexes = [i for i in range(len(parsed_content))]
         
-        #df = pd.DataFrame([[str(i),min_temps[i], max_temps[i]] for i in indexes], columns=["Idx","Min_temp","Max_temp"])
-        df = pd.DataFrame([[str((i+1)*100),enthalpies[i]] for i in indexes], columns=["Nb_subd","Enthalpies"])
-#
-        df.plot(x="Nb_subd",kind="bar",title="Enthalpies")
-#
+        df = pd.DataFrame([[str(i),min_temps[i], max_temps[i]] for i in indexes], columns=["Idx","Min_temp","Max_temp"])
+        #df = pd.DataFrame([[str((i+1)*100),enthalpies[i]] for i in indexes], columns=["Nb_subd","Enthalpies"])
+
+        df.plot(x="Idx",kind="bar",title="Min/Max selon config")
+        #plt.plot(min_temps, label="min", color="b")
+        #plt.plot(max_temps, label="max", color="r")
         #plt.ylim([-50,50])
         plt.grid(True)
+        #plt.legend()
+        #plt.show()
         
         #plt.axhline(y = 15, color = 'r', linestyle = '-') # Si l'on a fait tous les tests a une T_e identique
         

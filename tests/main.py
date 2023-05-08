@@ -76,9 +76,9 @@ def main():
 
     nb_subdivision = 50
 
-    vitesses = [5, 7.5, 15]
-    volumes = [0.5, 2, 7.5, 10]
-    L_l = [0.5, 1,5, 5, 10]
+    vitesses = [0.01, 0.1, 2, 5]
+    volumes = [100, 1000, 10000, 100000]
+    L_l = [0.5]
     D = [0.00001478969060]
 
     configs = read_user_conf()
@@ -90,7 +90,7 @@ def main():
             for vol in volumes:
                 for l in L_l:
                     for d in D:
-                        tests.append(create_test(288,vit,vol,l,l,nb_subdivision,1256,d,names[0].format(id),names[1].format(id), names[2].format(id), names[3].format(id), names[4].format(id), names[5].format(id), False,10,"../results/air_temp.tipe","../results/air_temp_last_first.tipe","../results/masses_temp_last_first.tipe", id))
+                        tests.append(create_test(288,vit,vol,68,29,nb_subdivision,1256,d,names[0].format(id),names[1].format(id), names[2].format(id), names[3].format(id), names[4].format(id), names[5].format(id), False,10,"../results/air_temp.tipe","../results/air_temp_last_first.tipe","../results/masses_temp_last_first.tipe", id))
         id += 1
     curr = 0
     nb_tests = len(tests)

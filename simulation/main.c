@@ -55,7 +55,6 @@ int main(int argc, char **argv) {
     char* config_r_wall_h_buff = (char*)malloc(sizeof(char)*64);
     char* config_r_wall_h;
 
-
     T_e = atof(argv[1]);
     Vitesse_air = atof(argv[2]);
     Volume_air = atof(argv[3]);
