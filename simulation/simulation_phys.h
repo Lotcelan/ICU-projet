@@ -37,32 +37,8 @@ void conduction_all_surfaces(int n, cell_matrix* air_temp, cell_matrix* last_air
         }
     }
 }
-/*
-void therm_ray_refl(int n, cell_matrix* air_temp, cell_matrix* last_air_temp, cell_matrix* masses, s_t_matrix* floor_temp, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double fluid_speed, double c_p, forest fr, double coeff_absorption_thermique_air) {
-    for (int y = 0; y < n; y++ ) {
-        for (int x = 0; x < last_air_temp[y].cols; x++) {
-            for (int z = 0; z < last_air_temp[y].rows; z++) {
-                double temp_x_moins_1 = (x != 0) ? get_cell(last_air_temp, x-1, y, z).value : get_cell(last_air_temp, x, y, z).value;
-                bool is_under_tree = false;
-                cell current_cell = get_cell(air_temp, x, y, z);
-                for (int t = 0; t < fr.size; t++) {
-                    if ( (is_colliding(current_cell.global_x, current_cell.global_y, -1, true, true, false, fr.tree_list[t].bb) && current_cell.global_z >= - (fr.tree_list[t].bb.start_z + fr.tree_list[t].bb.height) + last_air_temp[x].rows - 1)) { // potentiellement raycasting ici plus tard
-                        //printf("Under tree : %i, %i, %i et absoulete_y + y = %i, idx_fst > 0 : %i\n", x, y, z, absolute_y + y, (idx_c.fst > 0) ? 1 : (-1));
-                        is_under_tree = true;
-                    }
-                }
-                if (!is_under_tree) {
-                    double radiation_absorbee = get_surf(floor_temp, x, y).albedo * 1230 * exp( -1 / (3.8 * sin(3.14 / 180 * (10 + 1.6)))) * coeff_absorption_thermique_air * h_n;
-                    double new_T_air = air_temp_calc_ray(x, y, z, lambda, tau, c_p, get_cell(masses, x, y, z).value, get_cell(last_air_temp, x, y, z).value, temp_x_moins_1, radiation_absorbee, fluid_speed);
-                    update_cell_value(air_temp, x, y, z, new_T_air);
-                    update_min_max_temp(new_T_air, min_temp, max_temp);
-                }
-            }
-        }
-    }
-}
-*/
-void  heat_surface(int n, forest fr, s_t_matrix* floor_temp, double tau, cell_matrix* air_temp, double dx, double dy) {
+    
+void heat_surface_floor(int n, forest fr, s_t_matrix* floor_temp, double tau, cell_matrix* air_temp, double dx, double dy) {
     double phi = 0;
     surface_temp surf_x_plus_1, surf_x_moins_1, surf_y_plus_1, surf_y_moins_1;
     for (int y = 0; y < floor_temp->rows; y++) { 
@@ -76,7 +52,7 @@ void  heat_surface(int n, forest fr, s_t_matrix* floor_temp, double tau, cell_ma
                 }
             }
             if (!is_under_tree) {
-                phi = 170;
+                phi = 502;
             }
             else {
                 phi = 0;
@@ -126,18 +102,19 @@ void therm_stefan(int n, cell_matrix* air_temp, cell_matrix* last_air_temp, cell
     for (int y = 0; y < n; y++ ) {
         for (int x = 0; x < last_air_temp[y].cols; x++) {
             for (int z = 0; z < last_air_temp[y].rows; z++) {
+
                 // Version : tout le monde en prend plein la gueule, seulement entre les murs set sols
                 cell current_cell = get_cell(air_temp, x, y, z);
                 if (current_cell.global_x >= n && current_cell.global_x < 2*n) {
-                    double temp_x_moins_1 = (x != 0) ? current_cell.value : current_cell.value;
+                    double temp_x_moins_1 = (x != 0) ? get_cell(last_air_temp, x-1,   y,   z).value : get_cell(last_air_temp, x, y, z).value;
 
-                    bool is_under_tree = false;
+                    bool is_above_tree = false;
                     bool colliding_from_left = false; // Faux si PEUT recevoir rayonnement du mur gauche
                     bool colliding_from_right = false; // resp mur droit
 
                     for (int t = 0; t < fr.size; t++) {
-                        if ( is_colliding(global_x_to_street(current_cell.global_x, n), current_cell.global_y, -1, true, true, false, fr.tree_list[t].bb) &&  current_cell.global_z >= fr.tree_list[t].bb.start_z ) { // potentiellement raycasting ici plus tard
-                            is_under_tree = true;
+                        if ( is_colliding(global_x_to_street(current_cell.global_x, n), current_cell.global_y, -1, true, true, false, fr.tree_list[t].bb) &&  current_cell.global_z <= fr.tree_list[t].bb.start_z + fr.tree_list[t].bb.height ) { // potentiellement raycasting ici plus tard
+                            is_above_tree = true;
                         }
                         if ( is_colliding(global_x_to_street(current_cell.global_x, n), -1, current_cell.global_z, true, false, true, fr.tree_list[t].bb) && current_cell.global_y >= fr.tree_list[t].bb.start_y ) {
                             colliding_from_left = true;
@@ -146,8 +123,7 @@ void therm_stefan(int n, cell_matrix* air_temp, cell_matrix* last_air_temp, cell
                             colliding_from_right = true;
                         }
                     }
-
-                    double new_T_air = air_temp_calc_stefan(x, y, z, lambda, tau, c_p, get_cell(masses, x, y, z).value, get_cell(last_air_temp, x, y, z).value, temp_x_moins_1, fluid_speed, floor_temp, left_wall_temp, right_wall_temp, is_under_tree, colliding_from_left, colliding_from_right);
+                    double new_T_air = air_temp_calc_stefan(x, y, z, lambda, tau, c_p, get_cell(masses, x, y, z).value, get_cell(last_air_temp, x, y, z).value, temp_x_moins_1, fluid_speed, floor_temp, left_wall_temp, right_wall_temp, is_above_tree, colliding_from_left, colliding_from_right);
 
                     update_cell_value(air_temp, x, y, z, new_T_air);
                     update_min_max_temp(new_T_air, min_temp, max_temp);       
@@ -160,7 +136,7 @@ void therm_stefan(int n, cell_matrix* air_temp, cell_matrix* last_air_temp, cell
 }
     
 
-void convection(int n, cell_matrix* air_temp, cell_matrix* last_air_temp, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double D, double fluid_speed, double* temp_x_plus_1, double* temp_x_moins_1, double* temp_y_plus_1, double* temp_y_moins_1, double* temp_z_plus_1, double* temp_z_moins_1, s_t_matrix* floor_temp) {
+void conduction_air(int n, cell_matrix* air_temp, cell_matrix* last_air_temp, double* min_temp, double* max_temp, double lambda, double mu, double h_n, double tau, double D, double fluid_speed, double* temp_x_plus_1, double* temp_x_moins_1, double* temp_y_plus_1, double* temp_y_moins_1, double* temp_z_plus_1, double* temp_z_moins_1, s_t_matrix* floor_temp) {
     for (int y = 0; y < n; y++ ) {
         for (int x = 0; x < last_air_temp[y].cols; x++) {
             for (int z = 0; z < last_air_temp[y].rows; z++) {

@@ -79,12 +79,7 @@ def main():
 
     air_temp_file = "./results/air_temp_0.tipe"
     (data, rows, cols, nb, nb_sub, min_temp, max_temp) = get_info(air_temp_file)
-    #rows = 50
-    #cols = 50
-    #nb = 2048
-    #nb_sub = 50
-    #min_temp = 15.0
-    #max_temp = 75
+ 
     mat_gen = matrix_gen(data, nb, nb_sub, rows)
     floor_temp, left_wall_temp, right_wall_temp = read_config_values("./config/floor_temp_0.conf", "./config/left_wall_temp_0.conf", "./config/right_wall_temp_0.conf")
     pr.init_window(window_length, window_height, "3D Air")
@@ -97,12 +92,6 @@ def main():
     #forest = [ [ (10,16,5), (15,15,35) ] ]
     forest = []
     print(cols)
-    # https://github.com/raysan5/raylib/blob/master/examples/core/core_split_screen.c
-    #vp1 = [0                                     , 0                                     , window_length // 2, window_height // 2] # En haut à gauche
-    #vp2 = [window_length // 2                    , 0                                     , window_length     , window_height // 2] # En haut à droite
-    #vp3 = [0                                     , window_height // 2                    , window_length // 2, window_height     ] # En bas à gauche
-    #vp4 = [window_length // 2, window_height // 2, window_length // 2, window_height // 2, window_length     , window_height     ] # En bas à droite
-
 
     nb_frames_per_display = 1
 
@@ -159,7 +148,6 @@ def main():
             for i in range(tree[1][0]):
                 for j in range(tree[1][1]):
                     for k in range(tree[1][2]):
-                        #if (i == tree[1][0] or j == tree[1][1] or k == tree[1][2]):
                         pr.draw_cube((forest_start_X + tree[0][0] + i, rows - (tree[0][2] + tree[1][2]) + k, forest_start_Z + tree[0][1] + j), 1, 1, 1, pr.Color(25,255,25, 3))
 
         # DRAW FLUID
@@ -194,11 +182,7 @@ def main():
         pr.end_drawing()
         pr.set_window_title(f"{iteration}/{nb}")
         iteration += 1
-    #    pr.begin_mode_3d(camera)
-    #    pr.draw_grid(20, 1.0)
-    #    pr.end_mode_3d()
-    #    pr.end_drawing()
-    #pr.close_window()
+
 
 if __name__ == "__main__":
     main()

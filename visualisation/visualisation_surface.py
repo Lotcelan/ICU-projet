@@ -55,21 +55,7 @@ def get_col_by_temp(temp, min_temp, max_temp):
     
     perc = abs(temp-min_temp)/ecart
     return ((perc)*255 % 256,0,(1-perc)*255 % 256) 
-    """
-    if temp != "inf" and temp != "-inf":
-        return (255 * 1 / (1 + np.exp(-temp - 15)) , 0,0)
-    else:
-        return (0,0,0)
-    """
-    """
-    if temp != "inf" and temp != "-inf" and temp >= -5000 and temp <= 5000:
-        ecart = abs(abs(5000) + abs(-5000))
-        perc = abs(temp-5000)/ecart
-        return ((perc)*255 % 256,0,(1-perc)*255 % 256) 
-    else:
-        return (0,0,0)
-    """
-    
+
 
 def draw_surf_element(screen, i, j, color, h, l, temperature):
     pygame.draw.rect(screen, color, pygame.Rect(i*l, j*h, l, h))

@@ -5,13 +5,6 @@
 #include "simulation_utils.h"
 #include "simulation_phys.h"
 
-
-/* Possibilité pour calculer h
-double calculer_h(double delta_t, double L) {
-    return 1.32 * sqrt(sqrt(abs(delta_t/L)));
-}
-*/
-
 double* simulation(double T_e, double fluid_speed, double fluid_volume, double L, double l,
     int n, double c_p, double D, char* config_l_wall_temp, char*  config_floor_temp, char*  config_r_wall_temp, char*  config_l_wall_h, char*  config_floor_h, char*  config_r_wall_h,
     bool continuer_meme_si_fini, int nb_iterations_supplementaires, char* save_air_temp_filename,
@@ -120,7 +113,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     // Les fichiers de sauvegarde
 
     FILE* save_air_temp = fopen(save_air_temp_filename, "w");
-    FILE* masses_last_fircoeff_absorption_thermique_airst = fopen(masses_last_first_file, "w");
+    FILE* masses_last_first = fopen(masses_last_first_file, "w");
     FILE* air_temp_last_first = fopen(air_temp_last_first_file, "w");
 
     FILE* save_floor_temp = fopen("../results/floor_temp_0.tipe", "w");
@@ -167,7 +160,7 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
         // DEBUT SIMULATION
         write_surf_temp_mat(save_floor_temp, floor_temp, -273);
-        heat_surface(n, fr, floor_temp, tau, air_temp, lambda, mu);
+        heat_surface_floor(n, fr, floor_temp, tau, air_temp, lambda, mu);
         //therm_stefan(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air, floor_temp, left_wall_temp, right_wall_temp);
         //copy_cell_mat(last_air_temp, air_temp, n);
         //therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air);
@@ -176,8 +169,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         //copy_cell_mat(last_air_temp, air_temp, n);
         conduction_all_surfaces(n, air_temp, last_air_temp, masses, floor_temp, left_wall_temp, right_wall_temp, &min_temp, &max_temp, mu, lambda, tau, fluid_speed, c_p);
         copy_cell_mat(last_air_temp, air_temp, n);
-        convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1, floor_temp);
-
+        conduction_air(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1, floor_temp);
+        
         // FIN SIMULATION
 
         iteration++;
@@ -202,49 +195,6 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     variation_enthalpie_totale = calcul_enthalpie(n, masses, air_temp, first_iteration, c_p);
 
-    //printf("Min_temp = %.6f; Max_temp = %.6f; Var enth = %.6f\n", min_temp-273.0, max_temp-273.0, variation_enthalpie_totale);
-
-
-    
-    
-    
-    // EQUILIBRE THERMIQUE (fonction temporaire !) (plus trop en fait)
-    // ne peut plus atteindre l'équilibre LOL
-    /*
-    if (continuer_meme_si_fini) {
-        double e = 1;
-        int nb_it_eq = 0;
-        while (e >= 0.007 && (nb_iterations_supplementaires == -1 || nb_it_eq < nb_iterations_supplementaires)) {
-            nb_it_eq++;
-        
-            therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air);
-            copy_cell_mat(last_air_temp, air_temp, n);
-            therm_ray_refl(n, air_temp, last_air_temp, masses, floor_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air);
-            copy_cell_mat(last_air_temp, air_temp, n);
-            convection(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1, floor_temp);
-            iteration++;
-            
-            // Inscription des données de température de ce tour de simulation dans le fichier
-
-            write_cell_mat(save_air_temp, air_temp, (-273.0), n);
-
-            // Calcul de "l'écart" e 
-            double compteur_e = 0;
-            for (int y = 0; y < n; y++) {
-                for (int z = 0; z < air_temp[y].rows; z++) {
-                    for (int x = 0; x < air_temp[y].cols; x++) {                
-                        compteur_e += pow(get_cell(air_temp, x, y, z).value - get_cell(last_air_temp, x, y, z).value, 2);
-                    }
-                }
-            }
-            e = sqrt(compteur_e / (n * air_temp[0].rows * air_temp[0].cols));    
-        }
-
-        printf("L'équilibre a été atteint en %i itérations\n", nb_it_eq);
-    }
-    */
-    
-
     if (print_to_file) {
         // A la toute fin du fichier contenant toute la simulation on ajoute la température min et max
         
@@ -260,12 +210,6 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     fclose(masses_last_first);
     fclose(air_temp_last_first);
-
-
-    // On recalcule après la mise à l'équilibre
-
-    variation_enthalpie_totale = calcul_enthalpie(n, masses, air_temp, first_iteration, c_p);
-    
 
     printf("Min_temp = %.6f °C; Max_temp = %.6f °C; Var enth = %.6f J\n", min_temp-273.0, max_temp-273.0, variation_enthalpie_totale);
 

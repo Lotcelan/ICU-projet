@@ -29,8 +29,8 @@ int main(int argc, char **argv) {
         - Un tuple de flottants correspondants à la température max et min, surtout utile pour le DEBUG
     */
 
-   // Exemple d'utilisation ./main 288 5 7.5 5 5 50 1256 0.03 ../config/left_wall_temp_0.conf ../config/floor_temp_0.conf ../config/right_wall_temp_0.conf ../config/left_wall_h_0.conf ../config/floor_h_0.conf ../config/right_wall_h_0.conf 0 10 ../results/air_temp.tipe ../results/air_temp_last_first.tipe ../results/masses_temp_last_first.tipe 1 1 42
-
+   // Exemple d'utilisation ./main 288 5 10000 68 29 50 1004 0.000018501  ../config/left_wall_temp_0.conf ../config/floor_temp_0.conf ../config/right_wall_temp_0.conf ../config/left_wall_h_0.conf ../config/floor_h_0.conf ../config/right_wall_h_0.conf 0 -1 ../results/air_temp_0.tipe ../results/air_temp_last_first_0.tipe ../results/masses_temp_last_first_0.tipe 0 1 42
+   
     double T_e, Vitesse_air, Volume_air, L, l, c_p, D;
     int n, continuer_meme_si_fini, nb_it_supp, flask, print_to_file, id;
 
