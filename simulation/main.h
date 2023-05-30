@@ -25,8 +25,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
 
     const double lambda = L / n; // Longueur infinitésimale
     const double mu = l / n; // Largeur infinitésimale
-    //const double height_tot = fluid_volume / (l * L); // On peut alors trouver la hauteur que va occuper le fluide
-    //const double h_n = height_tot / n; // Soit la hauteur infinitésimale
+    const double height_tot = fluid_volume / (l * L); // On peut alors trouver la hauteur que va occuper le fluide
+    const double h_n = height_tot / n; // Soit la hauteur infinitésimale
 
     double variation_enthalpie_totale = 0;
     double temp_x_plus_1, temp_x_moins_1, temp_y_plus_1, temp_y_moins_1, temp_z_plus_1, temp_z_moins_1; // Représentent à l'itération précédente les températures décalées de + ou - 1 selon x, y ou z
@@ -34,16 +34,16 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     const double tau = lambda / (fluid_speed / 3.6); // temps (en s) de simulation à tour de simulation
 
     //version alt
-    const double height_tot = 18;
-    fluid_volume = L * l * height_tot;
-    const double h_n = height_tot / n; // Soit la hauteur infinitésimale
+    // ./main 288 10 10000 68 29 50 1004 0.000018501  ../config/left_wall_temp_0.conf ../config/floor_temp_0.conf ../config/right_wall_temp_0.conf ../config/left_wall_h_0.conf ../config/floor_h_0.conf ../config/right_wall_h_0.conf 0 -1 ../results/air_temp_0.tipe ../results/air_temp_last_first_0.tipe ../results/masses_temp_last_first_0.tipe 0 1 42
+    //const double height_tot = 18;
+    //fluid_volume = L * l * height_tot;
+    //const double h_n = height_tot / n; // Soit la hauteur infinitésimale
 
     printf("Lambda = %.6f; mu = %.6f; h_n = %.6f; tau = %.6f\n", lambda, mu, h_n, tau);
 
     // Paramètres qui ne sont pas en paramètre de l'exécutable (plus le temps de faire ça)
 
     // x : du début vers la fin; y : du mur gauche; z : de haut en bas
-    // a refaire
     bounding_box tree1_bb = { .start_x = 10, .start_y = 10, .start_z = 20, .width = 10, .length = 10, .height = 15 };
     tree tree1 = { .bb = tree1_bb };
     
@@ -63,7 +63,6 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     list[3] = tree4;
     forest fr = { .tree_list = list, .size = 4 };
 
-    double coeff_absorption_thermique_air = 0.0007;
     double albedo_beton = 0.4;
     double albedo_asphalte = 0.1;
     double albedo_brique = 0.45;

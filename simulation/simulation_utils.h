@@ -24,21 +24,25 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
 
     FILE* config_surface_temp = fopen(config_surface_temp_filename, "r");
     FILE* config_surface_h = fopen(config_surface_h_filename, "r");
-    float temp;
-    float h;
+
+    assert(config_surface_temp != NULL);
+    assert(config_surface_h != NULL);
+
+    double temp;
+    double h;
 
      for (int j = 0; j < tab->rows; j++) {        // On suppose que murs et sol ont la même dimension
         for (int k = 0; k < tab->cols; k++) {
             surface new_surf = { .width = mu, .length = lambda, .height = -1, .masse_vol = -1, .capacite_thermique = -1 };
 
-            fscanf(config_surface_temp, "%f", &temp);
+            fscanf(config_surface_temp, "%lf", &temp);
             tab->data[idx(j, k, tab->cols)].temp = temp;
-            fscanf(config_surface_h, "%f", &h);
+            fscanf(config_surface_h, "%lf", &h);
             tab->data[idx(j, k, tab->cols)].h = h; // 1/h_i + e/lambda (1/hi dépend e = épaisseur surface en (m) et lambda = conductivité thermique (ici celle du béton)); cf https://fr.wikipedia.org/wiki/Coefficient_de_convection_thermique
             tab->data[idx(j, k, tab->cols)].surf = new_surf;
 
             double chosen_albedo = 0;
-            if (h - 2.16 <= 0.001) {
+            if (h - 2.16 <= 0.001 && h - 2.16 >= -0.001) {
                 chosen_albedo = albedo_beton;
                 tab->data[idx(j, k, tab->cols)].surf.height = 0.425;
                 tab->data[idx(j, k, tab->cols)].surf.masse_vol = 2000;
@@ -46,7 +50,7 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
                 tab->data[idx(j, k, tab->cols)].surf.conductivite_thermique = 1.75;
                 //printf("béton1\n");
             }
-            else if (h - 2.195 <= 0.001) {
+            else if (h - 2.195 <= 0.001 && h - 2.195 >= -0.001) {
                 chosen_albedo = albedo_beton;
                 tab->data[idx(j, k, tab->cols)].surf.height = 0.5;
                 tab->data[idx(j, k, tab->cols)].surf.masse_vol = 2000;
@@ -54,7 +58,7 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
                 tab->data[idx(j, k, tab->cols)].surf.conductivite_thermique = 1.75;
                 //printf("béton2\n");
             }
-            else if (h - 2.544 <= 0.001) {
+            else if (h - 2.544 <= 0.001 && h - 2.544 >= -0.001) {
                 chosen_albedo = albedo_asphalte;
                 tab->data[idx(j, k, tab->cols)].surf.height = 0.3;//0.016;
                 tab->data[idx(j, k, tab->cols)].surf.masse_vol = 2400;
@@ -62,7 +66,7 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
                 tab->data[idx(j, k, tab->cols)].surf.conductivite_thermique = 1;
                 //printf("asphalte\n");
             }
-            else if (h - 4.356 <= 0.001) {
+            else if (h - 4.356 <= 0.001 && h - 4.356 >= -0.001) {
                 chosen_albedo = albedo_brique;
                 tab->data[idx(j, k, tab->cols)].surf.height = 0.02;
                 tab->data[idx(j, k, tab->cols)].surf.masse_vol = 1750;
@@ -70,19 +74,24 @@ void init_surface_temp(s_t_matrix* tab, int rows, int cols, char* config_surface
                 tab->data[idx(j, k, tab->cols)].surf.conductivite_thermique = 0.84;
 
                 //printf("brique\n");
-            } else if (h - 4.023 <= 0.001) {
+            } else if (h - 4.023 <= 0.001 && h - 4.023 >= - 0.001) {
                 chosen_albedo = albedo_ciment;
-                tab->data[idx(j, k, tab->cols)].surf.height = 0.016;
-                tab->data[idx(j, k, tab->cols)].surf.masse_vol = 1000;
-                tab->data[idx(j, k, tab->cols)].surf.capacite_thermique = 920;
-                tab->data[idx(j, k, tab->cols)].surf.conductivite_thermique = 1.4;
+                tab->data[idx(j, k, tab->cols)].h = 2; // 1/h_i + e/lambda (1/hi dépend e = épaisseur surface en (m) et lambda = conductivité thermique (ici celle du béton)); cf https://fr.wikipedia.org/wiki/Coefficient_de_convection_thermique
 
-                //printf("brique\n");
+                tab->data[idx(j, k, tab->cols)].surf.height = 0.016;
+                tab->data[idx(j, k, tab->cols)].surf.masse_vol = 1900;
+                tab->data[idx(j, k, tab->cols)].surf.capacite_thermique = 864;
+                tab->data[idx(j, k, tab->cols)].surf.conductivite_thermique = 0.8;
+                
+                //printf("ciment\n");
             }
             else {
                 chosen_albedo = albedo_beton;
                 //printf("béton3\n");
             }
+            
+            //if (abs(h - 2.195) > 0.01) { printf("h : %.6f\n", h); }
+            //if (abs(h - 4.023) <=0.01) { printf("h_aled : %.6f\n", h); }
             tab->data[idx(j, k, tab->cols)].surf.albedo = chosen_albedo;
         }
     }

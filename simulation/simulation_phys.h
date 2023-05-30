@@ -19,7 +19,7 @@ void conduction_all_surfaces(int n, cell_matrix* air_temp, cell_matrix* last_air
         }
     }
 
-    // LES MURS
+    // L'AIR AU NIVEAU DES MURS
     for (int z = 0; z < air_temp[0].rows; z++) { 
         for (int x = 0; x < air_temp[0].cols; x++) {
             // GAUCHE
@@ -37,37 +37,44 @@ void conduction_all_surfaces(int n, cell_matrix* air_temp, cell_matrix* last_air
         }
     }
 }
+
+    
     
 void heat_surface_floor(int n, forest fr, s_t_matrix* floor_temp, double tau, cell_matrix* air_temp, double dx, double dy) {
     double phi = 0;
+    int g_x = 0;
     surface_temp surf_x_plus_1, surf_x_moins_1, surf_y_plus_1, surf_y_moins_1;
     for (int y = 0; y < floor_temp->rows; y++) { 
         for (int x = 0; x < floor_temp->cols; x++) {
             bool is_under_tree = false;
-            for (int t = 0; t < fr.size; t++) {
-                if (is_colliding(x,y,0, true, true, false, fr.tree_list[t].bb)) { // potentiellement raycasting ici plus tard
-                    //printf("Under tree : %i, %i, %i et absoulete_y + y = %i, idx_fst > 0 : %i\n", x, y, z, absolute_y + y, (idx_c.fst > 0) ? 1 : (-1));
-                    is_under_tree = true;
-                    //printf("Je suis sous un arbre : x = %i; y = %i\n", x, y);
+            g_x = get_cell(air_temp, x, y, air_temp[y].rows - 1).global_x;
+            if (g_x >= n && g_x < 2*n) {
+
+                for (int t = 0; t < fr.size; t++) {
+                    if (is_colliding(global_x_to_street(g_x, n),y,0, true, true, false, fr.tree_list[t].bb)) { // potentiellement raycasting ici plus tard
+                        //printf("Under tree : %i, %i, %i et absoulete_y + y = %i, idx_fst > 0 : %i\n", x, y, z, absolute_y + y, (idx_c.fst > 0) ? 1 : (-1));
+                        is_under_tree = true;
+                        //printf("Je suis sous un arbre : x = %i; y = %i\n", x, y);
+                    }
                 }
+                if (!is_under_tree) {
+                    phi = 502;
+                }
+                else {
+                    phi = 0;
+                }
+                surface_temp current_surf = get_surf(floor_temp, y, global_x_to_street(g_x, n));
+                
+            surf_y_moins_1 = (y != 0 )                                                     ? get_surf(floor_temp, y-1, global_x_to_street(g_x, n)) : current_surf;
+            surf_y_plus_1  = (y != floor_temp->rows - 1)                                   ? get_surf(floor_temp, y+1, global_x_to_street(g_x, n)) : current_surf;
+                surf_x_moins_1 = (global_x_to_street(g_x, n) != 0)                         ? get_surf(floor_temp, y, global_x_to_street(g_x, n)-1) : current_surf;
+                surf_x_plus_1  = (global_x_to_street(g_x, n) != floor_temp->cols - 1)      ? get_surf(floor_temp, y, global_x_to_street(g_x, n)+1) : current_surf;
+                
+                double new_value = solar_radiation_conduction_floor(current_surf.surf, tau, phi, current_surf.temp, get_cell(air_temp, global_x_to_street(g_x, n), y, n-1).value, current_surf.h, dx, dy, surf_x_moins_1, surf_x_plus_1, surf_y_moins_1, surf_y_plus_1);
+                
+                //printf("En x = %i, y = %i : prev_temp = %.6f; new_temp =%.6f\n", x, y, floor_temp->data[idx(y, x, floor_temp->cols)].temp, new);
+                floor_temp->data[idx(y, global_x_to_street(g_x, n), floor_temp->cols)].temp = new_value;
             }
-            if (!is_under_tree) {
-                phi = 502;
-            }
-            else {
-                phi = 0;
-            }
-            surface_temp current_surf = get_surf(floor_temp, y, x);
-            
-            surf_y_moins_1 = (y != 0 )                        ? get_surf(floor_temp, y-1, x) : current_surf;
-            surf_y_plus_1  = (y != floor_temp->rows - 1)      ? get_surf(floor_temp, y+1, x) : current_surf;
-            surf_x_moins_1 = (x != 0)                         ? get_surf(floor_temp, y, x-1) : current_surf;
-            surf_x_plus_1  = (x != floor_temp->cols - 1)      ? get_surf(floor_temp, y, x+1) : current_surf;
-            
-            double new = solar_radiation_conduction_floor(current_surf.surf, tau, phi, current_surf.temp, get_cell(air_temp, x, y, n-1).value, current_surf.h, dx, dy, surf_x_moins_1, surf_x_plus_1, surf_y_moins_1, surf_y_plus_1);
-            
-            //printf("En x = %i, y = %i : prev_temp = %.6f; new_temp =%.6f\n", x, y, floor_temp->data[idx(y, x, floor_temp->cols)].temp, new);
-            floor_temp->data[idx(y, x, floor_temp->cols)].temp = new;
         }
     }
 }

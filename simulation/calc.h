@@ -63,7 +63,7 @@ void calculer_flux_conduction_surface(surface curr_surf, surface_temp surf_x_moi
     } else {
         height_contact = curr_surf.height;
     }
-    *flux_x_moins_1 =  - 2 * dy * height_contact / dx * (1 / curr_surf.conductivite_thermique + 1 / surf_x_moins_1.surf.conductivite_thermique) * (prev_temp - surf_x_moins_1.temp);
+    *flux_x_moins_1 =  - 2. * dy * height_contact / dx * (1. / curr_surf.conductivite_thermique + 1. / surf_x_moins_1.surf.conductivite_thermique) * (prev_temp - surf_x_moins_1.temp);
 
     
     if (curr_surf.height >  surf_x_plus_1.surf.height) {
@@ -71,21 +71,21 @@ void calculer_flux_conduction_surface(surface curr_surf, surface_temp surf_x_moi
     } else {
         height_contact = curr_surf.height;
     }
-    *flux_x_plus_1 =  - 2 * dy * height_contact / dx * (1 / curr_surf.conductivite_thermique + 1 / surf_x_plus_1.surf.conductivite_thermique) * (prev_temp  - surf_x_plus_1.temp);
+    *flux_x_plus_1 =  - 2. * dy * height_contact / dx * (1. / curr_surf.conductivite_thermique + 1. / surf_x_plus_1.surf.conductivite_thermique) * (prev_temp  - surf_x_plus_1.temp);
     
     if (curr_surf.height >  surf_y_moins_1.surf.height) {
         height_contact = surf_y_moins_1.surf.height;
     } else {
         height_contact = curr_surf.height;
     }
-    *flux_y_moins_1 =  - 2 * dx * height_contact / dy * (1 / curr_surf.conductivite_thermique + 1 / surf_y_moins_1.surf.conductivite_thermique) * (prev_temp - surf_y_moins_1.temp);
+    *flux_y_moins_1 =  - 2. * dx * height_contact / dy * (1. / curr_surf.conductivite_thermique + 1. / surf_y_moins_1.surf.conductivite_thermique) * (prev_temp - surf_y_moins_1.temp);
     
     if (curr_surf.height >  surf_y_plus_1.surf.height) {
         height_contact = surf_y_plus_1.surf.height;
     } else {
         height_contact = curr_surf.height;
     }
-    *flux_y_plus_1 = -  2 * dx * height_contact / dy * (1 / curr_surf.conductivite_thermique + 1 / surf_y_plus_1.surf.conductivite_thermique) * (prev_temp - surf_y_plus_1.temp);
+    *flux_y_plus_1 = -  2. * dx * height_contact / dy * (1. / curr_surf.conductivite_thermique + 1. / surf_y_plus_1.surf.conductivite_thermique) * (prev_temp - surf_y_plus_1.temp);
         
 }
 
