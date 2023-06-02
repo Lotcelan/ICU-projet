@@ -1,5 +1,6 @@
 import pyray as pr
 from math import *
+
 """
 Différences entre raylib pyhton/C :
 the function names are in snake_case.

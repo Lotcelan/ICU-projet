@@ -20,6 +20,11 @@ typedef struct cell {
     int global_z;
 } cell;
 
+typedef struct cell_option {
+    cell some;
+    bool valid;
+} cell_option;
+
 typedef struct cell_matrix
 {
     int cols; // Ce sera normalement toujours n
@@ -93,6 +98,19 @@ surface_temp get_surf(s_t_matrix* surf_mat, int x, int y) {
 
 cell get_cell(cell_matrix* c_mat, int x, int y, int z) {
     return c_mat[y].data[idx(z, x, c_mat[y].cols)];
+}
+
+cell_option get_cell_from_street(cell_matrix* c_mat, int street_x, int street_y, int street_z) {
+    // Pour passer du repère de la rue à une case dans l'air
+    int offset = get_cell(c_mat, 0, 0, 0).global_x;
+    int l_x = street_x + c_mat[0].cols - offset;
+    if (l_x >= 0 && l_x < c_mat[0].cols) {
+        cell_option temp = { .some = get_cell(c_mat, l_x, street_y, street_z), .valid = true };
+        return temp;
+    } else {
+        cell_option claque_au_sol = { .some = { -1, -1, -1, -1, -1, -1, -1}, .valid = false };
+        return claque_au_sol;
+    }
 }
 
 void update_cell_value(cell_matrix* c_mat, int x, int y, int z, double new_value) {

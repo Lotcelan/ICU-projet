@@ -14,6 +14,15 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         Effectue la simulation (arguments détaills dans main.c)
     */
 
+    /********************\
+    |                    |
+    |      Phase 1       |
+    |                    |
+    |    Initialisation  |
+    |                    |
+    \********************/
+    
+
     cell_matrix* air_temp = (cell_matrix*)malloc(n * sizeof(cell_matrix)); // Contiendra en i_e case la matrice de températures de la i_e subdivision selon la largeur
     cell_matrix* first_iteration = (cell_matrix*)malloc(n * sizeof(cell_matrix)); // Pour la variation d'enthalpie
     
@@ -31,29 +40,23 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     double variation_enthalpie_totale = 0;
     double temp_x_plus_1, temp_x_moins_1, temp_y_plus_1, temp_y_moins_1, temp_z_plus_1, temp_z_moins_1; // Représentent à l'itération précédente les températures décalées de + ou - 1 selon x, y ou z
 
-    const double tau = lambda / (fluid_speed / 3.6); // temps (en s) de simulation à tour de simulation
-
-    //version alt
-    // ./main 288 10 10000 68 29 50 1004 0.000018501  ../config/left_wall_temp_0.conf ../config/floor_temp_0.conf ../config/right_wall_temp_0.conf ../config/left_wall_h_0.conf ../config/floor_h_0.conf ../config/right_wall_h_0.conf 0 -1 ../results/air_temp_0.tipe ../results/air_temp_last_first_0.tipe ../results/masses_temp_last_first_0.tipe 0 1 42
-    //const double height_tot = 18;
-    //fluid_volume = L * l * height_tot;
-    //const double h_n = height_tot / n; // Soit la hauteur infinitésimale
+    const double tau = lambda / (fluid_speed / 3.6); // temps (en s) de simulation à chaque tour de simulation
 
     printf("Lambda = %.6f; mu = %.6f; h_n = %.6f; tau = %.6f\n", lambda, mu, h_n, tau);
 
     // Paramètres qui ne sont pas en paramètre de l'exécutable (plus le temps de faire ça)
 
     // x : du début vers la fin; y : du mur gauche; z : de haut en bas
-    bounding_box tree1_bb = { .start_x = 10, .start_y = 10, .start_z = 20, .width = 10, .length = 10, .height = 15 };
+    bounding_box tree1_bb = { .start_x = 10, .start_y = 10, .start_z = 20, .width = 15, .length = 15, .height = 25 };
     tree tree1 = { .bb = tree1_bb };
     
-    bounding_box tree2_bb = { .start_x = 30, .start_y = 10, .start_z = 20, .width = 10, .length = 10, .height = 15 };
+    bounding_box tree2_bb = { .start_x = 55, .start_y = 10, .start_z = 20, .width = 15, .length = 15, .height = 25 };
     tree tree2 = { .bb = tree2_bb };
 
-    bounding_box tree3_bb = { .start_x = 10, .start_y = 30, .start_z = 20, .width = 10, .length = 10, .height = 15 };
+    bounding_box tree3_bb = { .start_x = 10, .start_y = 55, .start_z = 20, .width = 15, .length = 15, .height = 25 };
     tree tree3 = { .bb = tree3_bb };
 
-    bounding_box tree4_bb = { .start_x = 30, .start_y = 30, .start_z = 20, .width = 10, .length = 10, .height = 15 };
+    bounding_box tree4_bb = { .start_x = 55, .start_y = 55, .start_z = 20, .width = 15, .length = 15, .height = 25 };
     tree tree4 = { .bb = tree4_bb };
 
     tree* list = (tree*)malloc(4 * sizeof(tree));
@@ -149,6 +152,14 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     float nb_decoupage = 20;
     printf("\n");
 
+     /********************\
+    |                    |
+    |      Phase 2       |
+    |                    |
+    |  Boucle principale |
+    |                    |
+    \********************/
+
     while (iteration <= 2*n) {
         
         // Pourcentage
@@ -160,12 +171,8 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
         // DEBUT SIMULATION
         write_surf_temp_mat(save_floor_temp, floor_temp, -273);
         heat_surface_floor(n, fr, floor_temp, tau, air_temp, lambda, mu);
-        //therm_stefan(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air, floor_temp, left_wall_temp, right_wall_temp);
-        //copy_cell_mat(last_air_temp, air_temp, n);
-        //therm_ray(n, air_temp, last_air_temp, masses, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air);
-        //copy_cell_mat(last_air_temp, air_temp, n);
-        //therm_ray_refl(n, air_temp, last_air_temp, masses, floor_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, fluid_speed, c_p, fr, coeff_absorption_thermique_air);
-        //copy_cell_mat(last_air_temp, air_temp, n);
+        heat_surface_walls(n, fr, left_wall_temp, right_wall_temp, tau, air_temp, lambda, mu);
+        // Potentiellement (si fonctionnel) réchauffemnt de l'air par rayonnement stefan du sol et des murs
         conduction_all_surfaces(n, air_temp, last_air_temp, masses, floor_temp, left_wall_temp, right_wall_temp, &min_temp, &max_temp, mu, lambda, tau, fluid_speed, c_p);
         copy_cell_mat(last_air_temp, air_temp, n);
         conduction_air(n, air_temp, last_air_temp, &min_temp, &max_temp, lambda, mu, h_n, tau, D, fluid_speed, &temp_x_plus_1, &temp_x_moins_1, &temp_y_plus_1, &temp_y_moins_1, &temp_z_plus_1, &temp_z_moins_1, floor_temp);
@@ -189,6 +196,14 @@ double* simulation(double T_e, double fluid_speed, double fluid_volume, double L
     }
 
     printf("100%%\n");
+
+    /*********************\
+    |                     |
+    |      Phase 3        |
+    |                     |
+    | Actions auxiliaires |
+    |                     |
+    \*********************/
 
     // Calcul de la variation d'enthalpie
 

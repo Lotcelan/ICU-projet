@@ -77,7 +77,7 @@ def main():
     nb_subdivision = 50
 
     vitesses = [0.01, 0.1, 2, 5]
-    volumes = [100, 1000, 10000, 100000]
+    volumes = [10000]
     L_l = [0.5]
     D = [0.00001478969060]
 
@@ -85,12 +85,9 @@ def main():
 
     id = 0
     for conf in configs:
-        create_custom_config(conf,names,id)
-        for vit in vitesses:
-            for vol in volumes:
-                for l in L_l:
-                    for d in D:
-                        tests.append(create_test(288,vit,vol,68,29,nb_subdivision,1256,d,names[0].format(id),names[1].format(id), names[2].format(id), names[3].format(id), names[4].format(id), names[5].format(id), False,10,"../results/air_temp.tipe","../results/air_temp_last_first.tipe","../results/masses_temp_last_first.tipe", id))
+        # Ajouter autant de for que l'on veut de tests
+        create_custom_config(conf,names,id) 
+        tests.append(create_test(288,5,10000,50,20,nb_subdivision,1004,0.000018501,names[0].format(id),names[1].format(id), names[2].format(id), names[3].format(id), names[4].format(id), names[5].format(id), False,-1,"../results/air_temp.tipe","../results/air_temp_last_first.tipe","../results/masses_temp_last_first.tipe", id))
         id += 1
     curr = 0
     nb_tests = len(tests)
