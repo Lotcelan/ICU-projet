@@ -91,12 +91,7 @@ def get_local_min_max(mat_bloc, rows, cols):
     return local_min, local_max
 
 def main(args):
-    """
-    Objectif : calculer la variation d'enthalpie massique engendrée par la variation de température du fluide
-    Paramètres :
-        - air_temp_file : fichier qui contient l'ensemble des matrices contenant les températures du fluide à la première à chaque itération
-        - masses_last_fist_file : de même avec les masses de chaque subdivision de fluide
-    """
+
     nb_frames_per_display = 1
     adaptive_colors = False
 

@@ -52,10 +52,6 @@ def read_user_conf():
     return res
             
 
-
-
-    return data
-
 def main():
     """
         Fichier qui permet de faire des batteries de tests. Utilisation :
